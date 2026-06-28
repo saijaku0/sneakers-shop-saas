@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="SneakersShop.API/SneakersShop.API.csproj" />
+  <Project Path="SneakersShop.Application/SneakersShop.Application.csproj" />
+  <Project Path="SneakersShop.Domain/SneakersShop.Domain.csproj" />
+  <Project Path="SneakersShop.Infrastructure/SneakersShop.Infrastructure.csproj" />
+  <Project Path="SneakersShop.Migrations/SneakersShop.Migrations.csproj" />
+</Solution>

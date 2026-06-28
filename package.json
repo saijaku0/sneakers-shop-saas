@@ -1,0 +1,30 @@
+{
+  "name": "sneakers-shop-saas",
+  "private": true,
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=9.0.0"
+  },
+  "scripts": {
+    "dev:web": "pnpm --filter web dev",
+    "build:web": "pnpm --filter web build",
+    "lint:web": "pnpm --filter web lint",
+    "format": "prettier --write \"**/*.{ts,tsx,md,json,cs}\"",
+    "dev": "concurrently \"pnpm run dev:web\" \"dotnet run --project ./путь_к_твоему_бэкенду/SneakersShop.API.csproj\""
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devEngines": {
+    "packageManager": {
+      "name": "pnpm",
+      "version": "11.0.9",
+      "onFail": "download"
+    }
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "prettier": "^3.2.5"
+  },
+  "type": "module"
+}

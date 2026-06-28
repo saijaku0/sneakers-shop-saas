@@ -1,0 +1,57 @@
+services:
+  mssql:
+    image: mcr.microsoft.com/mssql/server:2025-latest
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "${DB_PASSWORD}"
+    ports:
+      - "1433:1433"
+    volumes:
+      - mssql_data:/var/opt/mssql
+
+  redis:
+    image: redis:8-alpine
+    ports:
+      - "6379:6379"
+
+  migrations:
+    build:
+      context: ./backend
+      dockerfile: SneakersShop.Migrations/Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=${ConnectionString}
+    depends_on:
+      mssql:
+        condition: service_started
+
+  api:
+    build: 
+      context: ./backend
+      dockerfile: SneakersShop.API/Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=${ConnectionString}
+      - ConnectionStrings__Redis=redis:6379
+    ports: 
+      - "5000:8080"
+    depends_on:
+      migrations:
+        condition: service_completed_successfully
+      redis:
+        condition: service_started
+
+  web:
+    build:
+      context: .
+      dockerfile: web/Dockerfile
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:5000 
+    ports:
+      - "3000:3000"
+    depends_on:
+      api:
+        condition: service_started
+
+volumes:
+  mssql_data:
