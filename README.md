@@ -1,77 +1,79 @@
 # Sneakers Shop - Backend
 
-### Что такое MVP и на чём он строится
+### What is an MVP and what is it built around
 
-**MVP** (Minimum Viable Product) - минимальная версия продукта с набором функционала,
-достаточным для проверки основных бизнес-сущностей и модели предметной области.
-В объём сознательно входят не все сущности схемы: срез MVP - это цепочка
-«каталог -> корзина -> резерв товара -> заказ -> оплата». Discount, Comment, Wishlist
-вынесены в последующие итерации.
+**MVP** (Minimum Viable Product) is the minimum version of a product with a set of functionality
+sufficient to validate the core business entities and domain model.
+The scope intentionally does not include all entities in the schema: the MVP slice is the chain
+“catalog -> cart -> inventory reservation -> order -> payment”. Discount, Comment, Wishlist
+are deferred to subsequent iterations.
 
-### Аутентификация
+### Authentication
 
-Используется **ASP.NET Core Identity** - селф-хостед решение, встроенное в ASP.NET Core:
-логины и хеши паролей хранятся в собственной БД. Выбор обусловлен тем, что не нужно
-поднимать и настраивать внешний провайдер (Auth0) регистрация, вход, хеширование
-и управление сессиями идут «из коробки» и тесно связаны с пайплайном ASP.NET Core.
-`UserProfile.id` соответствует идентификатору пользователя из Identity.
+**ASP.NET Core Identity** is used - a self-hosted solution built into ASP.NET Core:
+logins and password hashes are stored in its own database. The choice is motivated by the fact
+that there is no need to deploy and configure an external provider (Auth0); registration, login,
+hashing, and session management are provided “out of the box” and are tightly integrated with
+the ASP.NET Core pipeline.
+`UserProfile.id` corresponds to the user identifier from Identity.
 
-### Сущности и агрегаты
+### Entities and aggregates
 
-- **Brand** - *агрегат* (небольшой самостоятельный корень). Хранит название бренда.
-  Product ссылается на Brand по `brandId`; связь один-ко-многим: один бренд = много
-  продуктов. Отдельный корень, потому что на Brand ссылаются несколько мест
-  (Product, Discount): разделяемая ссылка не может быть чьим-то дочерним объектом.
+- **Brand** - an *aggregate* (a small independent root). Stores the brand name.
+  Product references Brand by `brandId`; the relationship is one-to-many: one brand = many
+  products. It is a separate root because Brand is referenced from multiple places
+  (Product, Discount): a shared reference cannot be someone else's child object.
 
-- **Product** - *агрегат*, витрина товара (модель, описание, базовая цена, картинки).
-  Product ничего не знает о складе - это WarehouseItem ссылается на Product по ID.
-  Выделен отдельно намеренно: чтобы показывать товар, которого сейчас нет в наличии
-  (задел под дату будущего поступления). Корень, т.к. на него ссылаются WarehouseItem,
-  Comment, WishlistItem, Discount.
+- **Product** - an *aggregate*, the product showcase (model, description, base price, images).
+  Product knows nothing about inventory - WarehouseItem references Product by ID.
+  It is intentionally separated so that products can be displayed even when they are currently
+  out of stock (preparation for a future availability date). It is a root because it is referenced by
+  WarehouseItem, Comment, WishlistItem, Discount.
 
-- **WarehouseItem** - *агрегат* (склад). Обёртки `Warehouse` нет: она не стерегла бы
-  никакого инварианта поперёк позиций - остатки разных строк независимы.
-  **Инвариант:** `reserved <= quantity`, живёт в границе одной строки. Конкурентный
-  доступ защищён concurrency-токеном (`xmin`/version) на этой же строке. Содержит
-  **встроенный VO Size** (`sizeSystem`, `sizeValue`) - отдельной таблицы Size нет;
-  VO отвечает за представление размера в системах EU/US.
+- **WarehouseItem** - an *aggregate* (inventory). There is no `Warehouse` wrapper: it would not
+  enforce any invariant across positions - stock levels of different rows are independent.
+  **Invariant:** `reserved <= quantity`, enforced within the boundary of a single row. Concurrent
+  access is protected by a concurrency token (`xmin`/version) on the same row. Contains an
+  **embedded Size VO** (`sizeSystem`, `sizeValue`) - there is no separate Size table;
+  the VO is responsible for representing sizes in EU/US systems.
 
-- **Cart** - *агрегат*, изменяемая корзина пользователя. Отдельный корень, **НЕ часть
-  Order**: у корзины другой жизненный цикл (черновик, можно бросить) и другое отношение
-  к цене. Ключевые решения:
-    - Цены в корзине **живые** - `CartItem` не хранит цену, она вычисляется на чтении
-      из `Product.basePrice` + активные скидки. (Ср. `OrderItem`, который фиксирует
-      снимок цены.)
-    - Добавление в корзину **НЕ резервирует склад**. Резерв (`WarehouseItem.Reserve()`)
-      происходит только при оформлении заказа - иначе один товар в N корзинах
-      заблокировал бы весь остаток.
-    - Одна активная корзина на пользователя (`userId` unique).
-  **Инварианты:** `quantity > 0` у позиции; нет дублей SKU в одной корзине (повторное
-  добавление увеличивает количество).
+- **Cart** - an *aggregate*, the user's mutable shopping cart. A separate root, **NOT part of
+  Order**: the cart has a different lifecycle (draft, can be abandoned) and a different relationship
+  to pricing. Key decisions:
 
-- **CartItem** - *сущность* внутри агрегата Cart (не корень). Ссылается на конкретный
-  `WarehouseItem` (продукт+размер = SKU) по ID. Мутируется только через корень Cart
-  (методы мутации `internal`).
+  - Prices in the cart are **live** - `CartItem` does not store the price; it is calculated on read
+    from `Product.basePrice` + active discounts. (Compare with `OrderItem`, which stores a
+    price snapshot.)
+  - Adding an item to the cart does **NOT reserve inventory**. Reservation
+    (`WarehouseItem.Reserve()`) happens only during checkout - otherwise a single item in N
+    carts would lock all available stock.
+  - One active cart per user (`userId` unique).
+    **Invariants:** `quantity > 0` for an item; no duplicate SKUs within a cart (adding the same
+    SKU again increases the quantity).
 
-- **Order** - *агрегат*, оформленный заказ. Создаётся в момент checkout, далее движется
-  по статусам (Pending -> Paid -> …). **Инвариант:** `totalAmount` = сумма позиций;
-  цены **зафиксированы снимком** (`unitPrice`) на момент оформления.
+- **CartItem** - an *entity* within the Cart aggregate (not a root). References a specific
+  `WarehouseItem` (product + size = SKU) by ID. Mutates only through the Cart root
+  (`internal` mutation methods).
 
-- **OrderItem** - *сущность* внутри агрегата Order (не корень). Позиция заказа со снимком
-  цены. Наружу не ссылается, живёт и умирает вместе с Order.
+- **Order** - an *aggregate*, a placed order. Created at checkout and then progresses through
+  statuses (Pending -> Paid -> …). **Invariant:** `totalAmount` = sum of all items;
+  prices are **frozen as a snapshot** (`unitPrice`) at the time of checkout.
 
-- **UserProfile** - *агрегат*. Держит WishlistItem как дочерние сущности.
+- **OrderItem** - an *entity* within the Order aggregate (not a root). An order line containing
+  a price snapshot. It has no external references and lives and dies together with Order.
 
-### Оформление заказа (checkout)
+- **UserProfile** - an *aggregate*. Holds WishlistItem as child entities.
 
-Операция уровня Application, связывающая три агрегата (по ID, не вложением):
+### Checkout
 
-1. Прочитать `Cart` пользователя.
-2. Для каждой позиции - `WarehouseItem.Reserve(quantity)` (проверка `reserved <= quantity`,
-   concurrency-токен на строке склада).
-3. Зафиксировать цены снимком в `OrderItem` (`unitPrice`, `discountAmount`).
-4. Создать `Order` со статусом `Pending`.
-5. Очистить `Cart`.
+An Application-level operation that links three aggregates (by ID, not by nesting):
 
-Именно на шаге 2 живёт concurrency-логика (регресс-тест: N параллельных оформлений
-последней пары -> ровно 1 успех).
+1. Read the user's `Cart`.
+2. For each item - call `WarehouseItem.Reserve(quantity)` (validation of `reserved <= quantity`,
+   concurrency token on the inventory row).
+3. Freeze prices as snapshots in `OrderItem` (`unitPrice`, `discountAmount`).
+4. Create an `Order` with status `Pending`.
+5. Clear the `Cart`.
+
+The concurrency logic lives specifically in step 2 (regression test: N parallel checkouts for the
+last pair of items -> exactly 1 success).
