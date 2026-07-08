@@ -1,6 +1,6 @@
 # Sneakers Shop - Backend
 
-### What is an MVP and what is it built around
+## What is an MVP and what is it built around
 
 **MVP** (Minimum Viable Product) is the minimum version of a product with a set of functionality
 sufficient to validate the core business entities and domain model.
@@ -8,7 +8,7 @@ The scope intentionally does not include all entities in the schema: the MVP sli
 “catalog -> cart -> inventory reservation -> order -> payment”. Discount, Comment, Wishlist
 are deferred to subsequent iterations.
 
-### Authentication
+## Authentication
 
 **ASP.NET Core Identity** is used - a self-hosted solution built into ASP.NET Core:
 logins and password hashes are stored in its own database. The choice is motivated by the fact
@@ -17,7 +17,7 @@ hashing, and session management are provided “out of the box” and are tightl
 the ASP.NET Core pipeline.
 `UserProfile.id` corresponds to the user identifier from Identity.
 
-### Entities and aggregates
+## Entities and aggregates
 
 - **Brand** - an *aggregate* (a small independent root). Stores the brand name.
   Product references Brand by `brandId`; the relationship is one-to-many: one brand = many
@@ -64,7 +64,7 @@ the ASP.NET Core pipeline.
 
 - **UserProfile** - an *aggregate*. Holds WishlistItem as child entities.
 
-### Checkout
+## Checkout
 
 An Application-level operation that links three aggregates (by ID, not by nesting):
 
