@@ -1,6 +1,7 @@
 ﻿using SneakersShop.Domain.Common.Entities;
 using SneakersShop.Domain.Common.Guards;
 using SneakersShop.Domain.Common.Results;
+using SneakersShop.Domain.Warehouse.DomainEvents;
 using SneakersShop.Domain.Warehouse.Errors;
 using SneakersShop.Domain.Warehouse.ValueObjects;
 using static SneakersShop.Domain.Warehouse.WarehouseItemPolicy;
@@ -14,6 +15,8 @@ public sealed class WarehouseItem : AggregateRoot
     public int Quantity { get; private set; }
     public int ReservedQuantity { get; private set; }
     public byte[]? RowVersion { get; private set; }
+
+    public int Available => Quantity - ReservedQuantity;
 
     private WarehouseItem() { }
     private WarehouseItem(
@@ -40,6 +43,17 @@ public sealed class WarehouseItem : AggregateRoot
             return WarehouseError.QuantityExceedsMaximum(quantity, MaximumQuantity);
 
         return new WarehouseItem(productId, size, quantity);
+    }
+
+    public Result Reserve(int quantity)
+    {
+        Guard.Against.NegativeOrZero(quantity);
+
+        if (quantity > Available)
+            return WarehouseError.InsufficientStock(quantity, Available);
+        ReservedQuantity += quantity;
+        AddDomainEvent(new WarehouseItemReserved(Id, quantity));
+        return Result.Success();
     }
 }
 
