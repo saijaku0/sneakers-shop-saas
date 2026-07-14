@@ -7,6 +7,7 @@ public class DomainException : Exception
     public string? ErrorCode { get; }
 
     public DomainException() { }
+    public DomainException(string v) { }
 
     public DomainException(string? message, Exception? innerException)
         : base(message, innerException)
