@@ -1,4 +1,5 @@
 ﻿using SneakersShop.Domain.Common.Entities;
+using SneakersShop.Domain.Common.Exceptions;
 using SneakersShop.Domain.Common.Guards;
 using SneakersShop.Domain.Common.Results;
 using SneakersShop.Domain.Warehouse.DomainEvents;
@@ -48,12 +49,44 @@ public sealed class WarehouseItem : AggregateRoot
     public Result Reserve(int quantity)
     {
         Guard.Against.NegativeOrZero(quantity);
-
         if (quantity > Available)
             return WarehouseError.InsufficientStock(quantity, Available);
         ReservedQuantity += quantity;
         AddDomainEvent(new WarehouseItemReserved(Id, quantity));
         return Result.Success();
     }
-}
 
+    public Result Release(int quantity)
+    {
+        Guard.Against.NegativeOrZero(quantity);
+        if (quantity > ReservedQuantity)
+            throw new DomainException(
+                $"Cannot release {quantity}: only {ReservedQuantity} reserved.",
+                nameof(quantity));
+        ReservedQuantity -= quantity;
+        EnsureInvariant();
+        AddDomainEvent(new WarehouseItemReleased(Id, quantity));
+        return Result.Success();
+    }
+
+    public Result ConfirmShipment(int quantity)
+    {
+        Guard.Against.NegativeOrZero(quantity);
+        if (quantity > ReservedQuantity)
+            throw new DomainException(
+                $"Cannot ship {quantity}: only {ReservedQuantity} reserved.",
+                nameof(quantity));
+        ReservedQuantity -= quantity;
+        Quantity -= quantity;
+        EnsureInvariant();
+        AddDomainEvent(new WarehouseItemConfirmed(Id, quantity));
+        return Result.Success();
+    }
+
+    private void EnsureInvariant()
+    {
+        if (ReservedQuantity < 0 || ReservedQuantity > Quantity)
+            throw new DomainException(
+                $"Invariant violated: reserved={ReservedQuantity}, quantity={Quantity}.");
+    }
+}
