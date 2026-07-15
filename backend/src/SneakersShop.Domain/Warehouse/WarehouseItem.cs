@@ -53,7 +53,9 @@ public sealed class WarehouseItem : AggregateRoot
         if (quantity > Available)
             return WarehouseError.InsufficientStock(quantity, Available);
         ReservedQuantity += quantity;
+        EnsureInvariant();
         AddDomainEvent(new WarehouseItemReserved(Id, quantity));
+        Touch();
         return Result.Success();
     }
 
@@ -67,6 +69,7 @@ public sealed class WarehouseItem : AggregateRoot
         ReservedQuantity -= quantity;
         EnsureInvariant();
         AddDomainEvent(new WarehouseItemReleased(Id, quantity));
+        Touch();
         return Result.Success();
     }
 
@@ -81,6 +84,7 @@ public sealed class WarehouseItem : AggregateRoot
         Quantity -= quantity;
         EnsureInvariant();
         AddDomainEvent(new WarehouseItemShipped(Id, quantity));
+        Touch();
         return Result.Success();
     }
 

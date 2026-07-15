@@ -4,22 +4,24 @@ namespace SneakersShop.Domain.Common.Guards;
 
 public static class GuardAgainstNumberExtensions
 {
-    public static int Negative(
+    public static T Negative<T>(
         this IGuard guard,
-        int value,
+        T value,
         [CallerArgumentExpression(nameof(value))] string? parameterName = null)
+        where T : struct, IComparable<T>
     {
-        if (value < 0)
+        if (value.CompareTo(default) < 0)
             throw new ArgumentException($"Parameter '{parameterName}' must be non-negative.", parameterName);
         return value;
     }
 
-    public static int NegativeOrZero(
+    public static T NegativeOrZero<T>(
         this IGuard guard,
-        int value,
+        T value,
         [CallerArgumentExpression(nameof(value))] string? parameterName = null)
+        where T : struct, IComparable<T>
     {
-        if (value <= 0)
+        if (value.CompareTo(default) <= 0)
             throw new ArgumentException($"Parameter '{parameterName}' must be greater than zero.", parameterName);
         return value;
     }

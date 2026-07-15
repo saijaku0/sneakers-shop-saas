@@ -9,7 +9,8 @@ public enum ErrorType
     Forbidden,
     Internal,
     BadRequest,
-    TooManyRequests
+    TooManyRequests,
+    Invalid
 }
 
 /// <summary>
@@ -36,6 +37,8 @@ public record Error(string Code, string Message, ErrorType Type)
         => new(code, message, ErrorType.Forbidden);
     public static Error TooManyRequests(string code, string message)
         => new(code, message, ErrorType.TooManyRequests);
+    public static Error Invalid(string code, string message)
+        => new(code, message, ErrorType.Invalid);
 
     public static readonly Error None = new(string.Empty, string.Empty, ErrorType.Internal);
 }
