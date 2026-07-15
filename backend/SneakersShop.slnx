@@ -1,7 +1,12 @@
 <Solution>
-  <Project Path="SneakersShop.API/SneakersShop.API.csproj" />
-  <Project Path="SneakersShop.Application/SneakersShop.Application.csproj" />
-  <Project Path="SneakersShop.Domain/SneakersShop.Domain.csproj" />
-  <Project Path="SneakersShop.Infrastructure/SneakersShop.Infrastructure.csproj" />
-  <Project Path="SneakersShop.Migrations/SneakersShop.Migrations.csproj" />
+  <Folder Name="/src/">
+    <Project Path="src/SneakersShop.API/SneakersShop.API.csproj" />
+    <Project Path="src/SneakersShop.Application/SneakersShop.Application.csproj" />
+    <Project Path="src/SneakersShop.Domain/SneakersShop.Domain.csproj" />
+    <Project Path="src/SneakersShop.Infrastructure/SneakersShop.Infrastructure.csproj" />
+    <Project Path="src/SneakersShop.Migrations/SneakersShop.Migrations.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/SneakersShop.Domain.UnitTests/SneakersShop.Domain.UnitTests.csproj" />
+  </Folder>
 </Solution>
