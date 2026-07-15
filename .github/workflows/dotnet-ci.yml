@@ -15,11 +15,15 @@ env:
     DOTNET_NOLOGO: 'true'
     DOTNET_CLI_TELEMETRY_OPTOUT: 'true'
     CONFIGURATION: 'Release'
+    DOTNET_WORKER_DIR: backend
 
 jobs:
   build-and-test:
     name: Build & Test
     runs-on: ubuntu-latest
+    defaults:
+        run:
+            working-directory: ${{ env.DOTNET_WORKER_DIR }}
 
     steps:
       - name: Checkout
