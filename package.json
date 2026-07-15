@@ -9,8 +9,13 @@
     "dev:web": "pnpm --filter web dev",
     "build:web": "pnpm --filter web build",
     "lint:web": "pnpm --filter web lint",
-    "format": "prettier --write \"**/*.{ts,tsx,md,json,cs}\"",
-    "dev": "concurrently \"pnpm run dev:web\" \"dotnet run --project ./путь_к_твоему_бэкенду/SneakersShop.API.csproj\""
+    "format:web": "prettier --write \"**/*.{ts,tsx,md,json,cs}\"",
+    "format:web:check": "prettier --check \"**/*.{ts,tsx,md,json,cs}\"",
+    "check:format:dotnet": "dotnet format ./backend --verify-no-changes -v diag",
+    "dev:api": "concurrently \"pnpm run dev:web\" \"dotnet run --project ./backend/src/SneakersShop.API.csproj\"",
+    "dev:migrations": "dotnet run --project ./backend/src/SneakersShop.Migrations/SneakersShop.Migrations.csproj",
+    "dev:compose:up": "docker-compose -f infra/docker-compose.dev.yml up --build",
+    "dev:compose:down": "docker-compose -f infra/docker-compose.dev.yml down"
   },
   "keywords": [],
   "author": "",
