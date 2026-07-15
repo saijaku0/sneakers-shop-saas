@@ -10,7 +10,7 @@
     "build:web": "pnpm --filter web build",
     "lint:web": "pnpm --filter web lint",
     "format": "prettier --write \"**/*.{ts,tsx,md,json,cs}\"",
-    "dev": "concurrently \"pnpm run dev:web\" \"dotnet run --project ./путь_к_твоему_бэкенду/SneakersShop.API.csproj\""
+    "dev:api": "concurrently \"pnpm run dev:web\" \"dotnet run --project ./backend/src/SneakersShop.API.csproj\""
   },
   "keywords": [],
   "author": "",
