@@ -38,7 +38,7 @@ public class Result<T> : ResultBase
     {
         // Runtime check to ensure value is not null, as Result<T> should not hold a null value on success.
         ArgumentNullException.ThrowIfNull(value);
-        _value = value; 
+        _value = value;
     }
     private Result(Error error) : base(false, error) => _value = default;
 

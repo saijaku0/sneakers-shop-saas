@@ -21,8 +21,8 @@ public sealed class WarehouseItem : AggregateRoot
 
     private WarehouseItem() { }
     private WarehouseItem(
-        Guid productId, 
-        Size size, 
+        Guid productId,
+        Size size,
         int quantity) : base(Guid.CreateVersion7())
     {
         ProductId = productId;
@@ -32,8 +32,8 @@ public sealed class WarehouseItem : AggregateRoot
     }
 
     public static Result<WarehouseItem> Create(
-        Guid productId, 
-        Size size, 
+        Guid productId,
+        Size size,
         int quantity)
     {
         Guard.Against.Empty(productId);

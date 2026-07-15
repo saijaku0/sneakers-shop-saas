@@ -1,6 +1,7 @@
 ﻿using System.Runtime.CompilerServices;
 
 namespace SneakersShop.Domain.Common.Guards;
+
 public static class GuardAgainstRangeExtensions
 {
     public static int OutOfRange(
