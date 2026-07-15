@@ -3,5 +3,5 @@
 namespace SneakersShop.Domain.Catalog.Errors;
 
 public static class ProductError
-{ 
+{
 }
