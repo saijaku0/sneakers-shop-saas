@@ -21,5 +21,5 @@ public sealed record ProductImage
         Url = url;
     }
 
-    private ProductImage() { } 
+    private ProductImage() { }
 }
