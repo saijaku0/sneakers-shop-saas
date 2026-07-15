@@ -16,7 +16,7 @@ services:
 
   migrations:
     build:
-      context: ./backend/src
+      context: ../backend/src
       dockerfile: SneakersShop.Migrations/Dockerfile
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
@@ -27,7 +27,7 @@ services:
 
   api:
     build: 
-      context: ./backend/src
+      context: ../backend/src
       dockerfile: SneakersShop.API/Dockerfile
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
@@ -43,7 +43,7 @@ services:
 
   web:
     build:
-      context: .
+      context: ..
       dockerfile: web/Dockerfile
     environment:
       - NEXT_PUBLIC_API_URL=http://localhost:5000 
