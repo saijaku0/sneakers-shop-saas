@@ -79,7 +79,7 @@ public sealed class WarehouseItem : AggregateRoot
         ReservedQuantity -= quantity;
         Quantity -= quantity;
         EnsureInvariant();
-        AddDomainEvent(new WarehouseItemConfirmed(Id, quantity));
+        AddDomainEvent(new WarehouseItemShipped(Id, quantity));
         return Result.Success();
     }
 
