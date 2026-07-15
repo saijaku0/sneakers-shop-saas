@@ -5,6 +5,7 @@ using SneakersShop.Domain.Common.Results;
 using SneakersShop.Domain.Warehouse.DomainEvents;
 using SneakersShop.Domain.Warehouse.Errors;
 using SneakersShop.Domain.Warehouse.ValueObjects;
+
 using static SneakersShop.Domain.Warehouse.WarehouseItemPolicy;
 
 namespace SneakersShop.Domain.Warehouse;
