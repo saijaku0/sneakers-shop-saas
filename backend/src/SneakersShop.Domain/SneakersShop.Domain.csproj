@@ -6,4 +6,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="SneakersShop.Domain.UnitTests" />
+  </ItemGroup>
+
 </Project>

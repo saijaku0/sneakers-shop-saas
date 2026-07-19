@@ -15,6 +15,16 @@ public static class GuardAgainstNullExtensions
         return value;
     }
 
+    public static IEnumerable<T> NullOrEmpty<T>(
+        this IGuard guard,
+        [NotNull] IEnumerable<T>? value,
+        [CallerArgumentExpression(nameof(value))] string? parameterName = null)
+    {
+        if (value is null || !value.Any())
+            throw new ArgumentException($"Parameter '{parameterName}' cannot be null or empty.", parameterName);
+        return value;
+    }
+
     public static string NullOrWhiteSpace(
         this IGuard guard,
         [NotNull] string? value,
