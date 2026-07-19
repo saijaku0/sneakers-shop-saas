@@ -61,7 +61,7 @@ public sealed class Order : AggregateRoot
 
     public Result Pay(DateTimeOffset now)
     {
-        if (Status == OrderStatus.Cancelled)
+        if (Status == OrderStatus.Paid)
             return Result.Success();
 
         if (Status != OrderStatus.Pending)
