@@ -9,7 +9,7 @@ public sealed record Size
     public Size(decimal valueCm)
     {
         if (valueCm <= 0)
-            throw new DomainException(nameof(valueCm), "Size must be greater than zero.");
+            throw new DomainException("Size must be greater than zero.", nameof(valueCm));
         ValueCm = valueCm;
     }
     private Size() { }
