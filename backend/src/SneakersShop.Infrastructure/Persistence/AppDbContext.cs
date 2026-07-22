@@ -13,10 +13,10 @@ namespace SneakersShop.Infrastructure.Persistence;
 public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
     : DbContext(options)
 {
-    //public DbSet<Brand> Brands => Set<Brand>();
-    //public DbSet<Cart> Carts => Set<Cart>();
-    //public DbSet<Product> Products => Set<Product>();
-    //public DbSet<Order> Orders => Set<Order>();
+    public DbSet<Brand> Brands => Set<Brand>();
+    public DbSet<Cart> Carts => Set<Cart>();
+    public DbSet<Product> Products => Set<Product>();
+    public DbSet<Order> Orders => Set<Order>();
     public DbSet<WarehouseItem> WarehouseItems => Set<WarehouseItem>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
