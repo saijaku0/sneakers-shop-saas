@@ -10,7 +10,8 @@ public enum ErrorType
     Internal,
     BadRequest,
     TooManyRequests,
-    Invalid
+    Invalid,
+    None
 }
 
 /// <summary>
@@ -40,5 +41,5 @@ public record Error(string Code, string Message, ErrorType Type)
     public static Error Invalid(string code, string message)
         => new(code, message, ErrorType.Invalid);
 
-    public static readonly Error None = new(string.Empty, string.Empty, ErrorType.Internal);
+    public static readonly Error None = new(string.Empty, string.Empty, ErrorType.None);
 }
