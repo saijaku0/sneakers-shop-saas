@@ -5,7 +5,7 @@ using SneakersShop.Application.Abstractions.Exceptions;
 
 namespace SneakersShop.Application.Abstractions.Behaviors;
 
-public sealed class ConcurrencyRetryBehavior<TRequest, TResponse> 
+public sealed class ConcurrencyRetryBehavior<TRequest, TResponse>
     : IPipelineBehavior<TRequest, TResponse>
     where TRequest : ICommand
 {
