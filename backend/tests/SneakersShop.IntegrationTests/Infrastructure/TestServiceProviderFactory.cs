@@ -20,6 +20,8 @@ public static class TestServiceProviderFactory
 
         services.AddSingleton<IConfiguration>(configuration);
 
+        services.AddLogging();
+
         services.AddApplication();
         services.AddInfrastructure(configuration);
 
