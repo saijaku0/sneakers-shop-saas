@@ -5,7 +5,7 @@ using SneakersShop.Domain.Warehouse.Errors;
 
 namespace SneakersShop.Application.Warehouse.Commands.ReserveStock;
 
-internal sealed class ReserveStockCommandHandler(
+public sealed class ReserveStockCommandHandler(
     IWarehouseItemRepository repository,
     IUnitOfWork unitOfWork)
     : CommandHandler<ReserveStockCommand>(unitOfWork)
