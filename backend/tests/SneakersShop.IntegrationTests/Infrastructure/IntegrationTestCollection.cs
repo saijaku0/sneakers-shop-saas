@@ -1,6 +1,6 @@
 ﻿namespace SneakersShop.IntegrationTests.Infrastructure;
 
-[CollectionDefinition("IntegrationTestCollection")]
+[CollectionDefinition("IntegrationTests")]
 public class IntegrationTestCollection : ICollectionFixture<DatabaseFixture>
 {
 }
