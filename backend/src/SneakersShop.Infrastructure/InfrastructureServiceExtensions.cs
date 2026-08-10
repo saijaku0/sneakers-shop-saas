@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -6,6 +7,7 @@ using SneakersShop.Application.Abstractions.Authentication;
 using SneakersShop.Application.Abstractions.Repositories;
 using SneakersShop.Infrastructure.Persistence;
 using SneakersShop.Infrastructure.Persistence.Auth;
+using SneakersShop.Infrastructure.Persistence.Identity;
 using SneakersShop.Infrastructure.Persistence.Repositories;
 
 namespace SneakersShop.Infrastructure;
@@ -20,6 +22,11 @@ public static class InfrastructureServiceExtensions
             ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
         services.AddDbContext<AppDbContext>((sp, options) =>
             options.UseSqlServer(connectionString, b => b.MigrationsAssembly("SneakersShop.Migrations")));
+
+        services
+            .AddIdentityCore<ApplicationUser>()
+            .AddRoles<IdentityRole<Guid>>()
+            .AddEntityFrameworkStores<AppDbContext>();
 
         // Register repositories and unit of work
         services.AddScoped<IWarehouseItemRepository, WarehouseItemRepository>();
