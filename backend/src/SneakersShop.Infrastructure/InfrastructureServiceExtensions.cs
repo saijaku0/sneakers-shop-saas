@@ -1,12 +1,17 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using System.Text;
+
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens;
 
 using SneakersShop.Application.Abstractions.Authentication;
 using SneakersShop.Application.Abstractions.Repositories;
 using SneakersShop.Infrastructure.Persistence;
 using SneakersShop.Infrastructure.Persistence.Auth;
+using SneakersShop.Infrastructure.Persistence.Auth.Abstractions;
 using SneakersShop.Infrastructure.Persistence.Identity;
 using SneakersShop.Infrastructure.Persistence.Repositories;
 
@@ -32,9 +37,30 @@ public static class InfrastructureServiceExtensions
         services.AddScoped<IWarehouseItemRepository, WarehouseItemRepository>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
 
-        //Register jwt settings and service
+        // JWT settings — bound once into a typed object, single source of truth
+        var jwtSettings = configuration.GetSection("JwtSettings").Get<JwtSettings>()
+            ?? throw new InvalidOperationException("JwtSettings section is missing or invalid.");
+
         services.Configure<JwtSettings>(configuration.GetSection("JwtSettings"));
         services.AddScoped<IAuthenticationService, AuthenticationService>();
+        services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+        services.AddScoped<IJwtService, JwtService>();
+
+        services.AddAuthentication(options =>
+        {
+            options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+            options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+        }).AddJwtBearer(options => options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.SecretKey)),
+            ValidateIssuer = true,
+            ValidIssuer = jwtSettings.Issuer,
+            ValidateAudience = true,
+            ValidAudience = jwtSettings.Audience,
+            ValidateLifetime = true,
+            ClockSkew = TimeSpan.Zero
+        });
 
         return services;
     }
