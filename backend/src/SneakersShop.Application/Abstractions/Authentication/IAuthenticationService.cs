@@ -12,4 +12,7 @@ public interface IAuthenticationService
     Task<Result> AssignRoleAsync(Guid userId, UserRoles role, CancellationToken cancellation = default);
     Task<Result<Guid?>> FindUserByEmailAsync(string email, CancellationToken cancellation = default);
     Task<Result<TokenGenerationRequest>> GetTokenGenerationDataAsync(Guid userId, CancellationToken cancellation = default);
+    Task<Result<AuthResponse>> LoginAsync(string email, string password, CancellationToken ct = default);
+    Task<Result<AuthResponse>> RefreshTokenAsync(string refreshToken, CancellationToken ct = default);
+    Task<Result> LogoutAsync(string refreshToken, CancellationToken ct = default);
 }

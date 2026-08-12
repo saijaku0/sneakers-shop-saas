@@ -23,6 +23,7 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<Order> Orders => Set<Order>();
     public DbSet<WarehouseItem> WarehouseItems => Set<WarehouseItem>();
     public DbSet<UserProfile> UserProfiles => Set<UserProfile>();
+    public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

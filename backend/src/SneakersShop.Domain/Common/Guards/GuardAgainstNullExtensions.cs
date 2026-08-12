@@ -46,4 +46,14 @@ public static class GuardAgainstNullExtensions
         return value;
     }
 
+    public static T Default<T>(
+        this IGuard guard,
+        [AllowNull, NotNull] T value,
+        [CallerArgumentExpression(nameof(value))] string? parameterName = null)
+        where T : struct
+    {
+        if (EqualityComparer<T>.Default.Equals(value, default!))
+            throw new ArgumentException($"Parameter '{parameterName}' cannot be the default value.", parameterName);
+        return value;
+    }
 }

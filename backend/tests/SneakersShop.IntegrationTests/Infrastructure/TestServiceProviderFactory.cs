@@ -14,7 +14,11 @@ public static class TestServiceProviderFactory
         IConfigurationRoot configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
-                { "ConnectionStrings:DefaultConnection", connectionString }
+                { "ConnectionStrings:DefaultConnection", connectionString },
+                { "JwtSettings:Secret", "SuperSecretKeyForTestingPurposesOnly12345!_@" },
+                { "JwtSettings:Issuer", "TestIssuer" },
+                { "JwtSettings:Audience", "TestAudience" },
+                { "JwtSettings:ExpiryMinutes", "60" }
             })
             .Build();
 
