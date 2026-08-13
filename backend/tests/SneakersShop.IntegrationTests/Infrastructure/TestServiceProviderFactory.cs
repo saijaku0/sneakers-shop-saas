@@ -15,10 +15,11 @@ public static class TestServiceProviderFactory
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
                 { "ConnectionStrings:DefaultConnection", connectionString },
-                { "JwtSettings:Secret", "SuperSecretKeyForTestingPurposesOnly12345!_@" },
+                { "JwtSettings:SecretKey", "SuperSecretKeyForTestingPurposesOnly12345!_@" },
                 { "JwtSettings:Issuer", "TestIssuer" },
                 { "JwtSettings:Audience", "TestAudience" },
-                { "JwtSettings:ExpiryMinutes", "60" }
+                { "JwtSettings:AccessTokenExpiryMinutes", "60" },
+                { "JwtSettings:RefreshTokenExpiryDays", "7" }
             })
             .Build();
 

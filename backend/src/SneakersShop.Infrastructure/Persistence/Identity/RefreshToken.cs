@@ -1,5 +1,4 @@
 ﻿using SneakersShop.Domain.Common.Guards;
-using SneakersShop.Domain.Common.Results;
 
 namespace SneakersShop.Infrastructure.Persistence.Identity;
 
