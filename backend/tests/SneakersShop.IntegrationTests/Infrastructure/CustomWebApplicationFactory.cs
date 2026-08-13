@@ -1,8 +1,7 @@
-﻿using Docker.DotNet.Models;
-
-using Microsoft.AspNetCore.Hosting;
+﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 using SneakersShop.Infrastructure.Persistence;
@@ -30,17 +29,15 @@ public class CustomWebApplicationFactory<TProgram>
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
-        builder.ConfigureAppConfiguration((context, config) =>
+        builder.ConfigureAppConfiguration((context, config) 
+            => config.AddInMemoryCollection(new Dictionary<string, string?>
         {
-            config.AddInMemoryCollection(new Dictionary<string, string?>
-            {
-                ["JwtSettings:SecretKey"] = "SuperSecretKeyForTestingPurposesOnly12345!_@",
-                ["JwtSettings:Issuer"] = "TestIssuer",
-                ["JwtSettings:Audience"] = "TestAudience",
-                ["JwtSettings:AccessTokenExpiryMinutes"] = "60",
-                ["JwtSettings:RefreshTokenExpiryDays"] = "7"
-            });
-        });
+            ["JwtSettings:SecretKey"] = "SuperSecretKeyForTestingPurposesOnly12345!_@",
+            ["JwtSettings:Issuer"] = "TestIssuer",
+            ["JwtSettings:Audience"] = "TestAudience",
+            ["JwtSettings:AccessTokenExpiryMinutes"] = "60",
+            ["JwtSettings:RefreshTokenExpiryDays"] = "7"
+        }));
 
         builder.ConfigureServices(services =>
         {
