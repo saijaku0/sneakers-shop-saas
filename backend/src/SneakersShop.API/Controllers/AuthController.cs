@@ -1,5 +1,6 @@
 using MediatR;
 
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 using SneakersShop.API.Contracts.Auth;
@@ -16,6 +17,7 @@ namespace SneakersShop.API.Controllers;
 [Route("api/v1/[controller]")]
 public class AuthController(ISender sender) : ControllerBase
 {
+    [AllowAnonymous]
     [HttpPost("register")]
     public async Task<IActionResult> Register(
         [FromBody] RegisterRequest request,
@@ -44,6 +46,7 @@ public class AuthController(ISender sender) : ControllerBase
         return result.ToActionResult();
     }
 
+    [AllowAnonymous]
     [HttpPost("login")]
     public async Task<IActionResult> Login(
         [FromBody] LoginRequest request,
@@ -55,6 +58,7 @@ public class AuthController(ISender sender) : ControllerBase
         return result.ToActionResult();
     }
 
+    [AllowAnonymous]
     [HttpPost("refresh")]
     public async Task<IActionResult> Refresh(
         [FromBody] RefreshRequest request,
