@@ -28,6 +28,8 @@ public static class InfrastructureServiceExtensions
         services.AddDbContext<AppDbContext>((sp, options) =>
             options.UseSqlServer(connectionString, b => b.MigrationsAssembly("SneakersShop.Migrations")));
 
+        services.AddSingleton(TimeProvider.System);
+
         services
             .AddIdentityCore<ApplicationUser>()
             .AddRoles<IdentityRole<Guid>>()
