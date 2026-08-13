@@ -1,7 +1,6 @@
 ﻿using SneakersShop.Domain.Common.Entities;
 using SneakersShop.Domain.Common.Guards;
 using SneakersShop.Domain.Common.ValueObjects;
-using SneakersShop.Domain.Consumer.DomainEvents;
 
 namespace SneakersShop.Domain.Consumer;
 
