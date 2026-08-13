@@ -1,10 +1,10 @@
 ﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 using SneakersShop.Infrastructure.Persistence;
+using SneakersShop.Infrastructure.Persistence.Auth;
 
 using Testcontainers.MsSql;
 
@@ -16,15 +16,6 @@ public class CustomWebApplicationFactory<TProgram>
     private readonly MsSqlContainer _container = new MsSqlBuilder("mcr.microsoft.com/mssql/server:2022-latest")
         .WithPassword("Password112233!")
         .Build();
-
-    public CustomWebApplicationFactory()
-    {
-        Environment.SetEnvironmentVariable("JwtSettings__SecretKey", "SuperSecretKeyForTestingPurposesOnly12345!_@");
-        Environment.SetEnvironmentVariable("JwtSettings__Issuer", "TestIssuer");
-        Environment.SetEnvironmentVariable("JwtSettings__Audience", "TestAudience");
-        Environment.SetEnvironmentVariable("JwtSettings__AccessTokenExpiryMinutes", "60");
-        Environment.SetEnvironmentVariable("JwtSettings__RefreshTokenExpiryDays", "7");
-    }
 
     public string ConnectionString => _container.GetConnectionString() + ";Database=SneakersShopDb;TrustServerCertificate=true";
 
@@ -48,6 +39,14 @@ public class CustomWebApplicationFactory<TProgram>
             services.AddDbContext<AppDbContext>(options =>
                 options.UseSqlServer(ConnectionString, b => b.MigrationsAssembly("SneakersShop.Migrations")));
 
+            services.Configure<JwtSettings>(opt =>
+            {
+                opt.SecretKey = "SuperSecretKeyForTestingPurposesOnly12345!_@";
+                opt.Issuer = "TestIssuer";
+                opt.Audience = "TestAudience";
+                opt.AccessTokenExpiryMinutes = 60;
+                opt.RefreshTokenExpiryDays = 7;
+            });
         });
     }
 
