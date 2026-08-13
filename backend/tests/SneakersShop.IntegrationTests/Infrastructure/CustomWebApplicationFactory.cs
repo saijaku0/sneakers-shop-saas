@@ -30,6 +30,18 @@ public class CustomWebApplicationFactory<TProgram>
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
+        builder.ConfigureAppConfiguration((context, config) =>
+        {
+            config.AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["JwtSettings:SecretKey"] = "SuperSecretKeyForTestingPurposesOnly12345!_@",
+                ["JwtSettings:Issuer"] = "TestIssuer",
+                ["JwtSettings:Audience"] = "TestAudience",
+                ["JwtSettings:AccessTokenExpiryMinutes"] = "60",
+                ["JwtSettings:RefreshTokenExpiryDays"] = "7"
+            });
+        });
+
         builder.ConfigureServices(services =>
         {
             var dbContextDescriptor = services.SingleOrDefault(
