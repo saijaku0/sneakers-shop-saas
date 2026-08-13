@@ -17,6 +17,15 @@ public class CustomWebApplicationFactory<TProgram>
         .WithPassword("Password112233!")
         .Build();
 
+    public CustomWebApplicationFactory()
+    {
+        Environment.SetEnvironmentVariable("JwtSettings__SecretKey", "SuperSecretKeyForTestingPurposesOnly12345!_@");
+        Environment.SetEnvironmentVariable("JwtSettings__Issuer", "TestIssuer");
+        Environment.SetEnvironmentVariable("JwtSettings__Audience", "TestAudience");
+        Environment.SetEnvironmentVariable("JwtSettings__AccessTokenExpiryMinutes", "60");
+        Environment.SetEnvironmentVariable("JwtSettings__RefreshTokenExpiryDays", "7");
+    }
+
     public string ConnectionString => _container.GetConnectionString() + ";Database=SneakersShopDb;TrustServerCertificate=true";
 
     public async Task InitializeAsync()
@@ -29,16 +38,6 @@ public class CustomWebApplicationFactory<TProgram>
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
-        builder.ConfigureAppConfiguration((context, config)
-            => config.AddInMemoryCollection(new Dictionary<string, string?>
-            {
-                ["JwtSettings:SecretKey"] = "SuperSecretKeyForTestingPurposesOnly12345!_@",
-                ["JwtSettings:Issuer"] = "TestIssuer",
-                ["JwtSettings:Audience"] = "TestAudience",
-                ["JwtSettings:AccessTokenExpiryMinutes"] = "60",
-                ["JwtSettings:RefreshTokenExpiryDays"] = "7"
-            }));
-
         builder.ConfigureServices(services =>
         {
             var dbContextDescriptor = services.SingleOrDefault(
