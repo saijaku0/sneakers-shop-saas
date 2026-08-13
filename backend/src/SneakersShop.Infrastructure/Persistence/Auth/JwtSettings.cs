@@ -3,7 +3,7 @@
 /// <summary>
 /// Represents the settings for JWT (JSON Web Token) authentication.
 /// </summary>
-internal class JwtSettings
+public sealed class JwtSettings
 {
     public string SecretKey { get; set; } = string.Empty;
     public string Issuer { get; set; } = string.Empty;
