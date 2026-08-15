@@ -16,12 +16,12 @@ public class WarehouseItemTests
     [Fact]
     public void Create_WithValidData_ReturnsSuccessWithZeroReserved()
     {
-        var productId = Guid.CreateVersion7();
+        var productVariantId = Guid.CreateVersion7();
 
-        var result = WarehouseItem.Create(productId, new Size(27.5m), 10);
+        var result = WarehouseItem.Create(productVariantId, new Size(27.5m), 10);
 
         result.IsSuccess.Should().BeTrue();
-        result.Value.ProductId.Should().Be(productId);
+        result.Value.ProductVariantId.Should().Be(productVariantId);
         result.Value.Quantity.Should().Be(10);
         result.Value.ReservedQuantity.Should().Be(0);
         result.Value.Available.Should().Be(10);
@@ -39,10 +39,9 @@ public class WarehouseItemTests
     }
 
     [Fact]
-    public void Create_WithEmptyProductId_Throws()
+    public void Create_WithEmptyProductVariantId_Throws()
     {
         var act = () => WarehouseItem.Create(Guid.Empty, new Size(27.5m), 10);
-
         act.Should().Throw<ArgumentException>();
     }
 
