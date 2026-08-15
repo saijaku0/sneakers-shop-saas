@@ -12,7 +12,7 @@ namespace SneakersShop.Domain.Warehouse;
 
 public sealed class WarehouseItem : AggregateRoot
 {
-    public Guid ProductId { get; private init; }
+    public Guid ProductVariantId { get; private init; }
     public Size Size { get; private init; } = null!;
     public int Quantity { get; private set; }
     public int ReservedQuantity { get; private set; }
@@ -22,29 +22,29 @@ public sealed class WarehouseItem : AggregateRoot
 
     private WarehouseItem() { }
     private WarehouseItem(
-        Guid productId,
+        Guid productVariantId,
         Size size,
         int quantity) : base(Guid.CreateVersion7())
     {
-        ProductId = productId;
+        ProductVariantId = productVariantId;
         Size = size;
         Quantity = quantity;
         ReservedQuantity = 0;
     }
 
     public static Result<WarehouseItem> Create(
-        Guid productId,
+        Guid productVariantId,
         Size size,
         int quantity)
     {
-        Guard.Against.Empty(productId);
+        Guard.Against.Empty(productVariantId);
         Guard.Against.Null(size);
         Guard.Against.NegativeOrZero(quantity);
 
         if (quantity > MaximumQuantity)
             return WarehouseError.QuantityExceedsMaximum(quantity, MaximumQuantity);
 
-        return new WarehouseItem(productId, size, quantity);
+        return new WarehouseItem(productVariantId, size, quantity);
     }
 
     public Result Reserve(int quantity)

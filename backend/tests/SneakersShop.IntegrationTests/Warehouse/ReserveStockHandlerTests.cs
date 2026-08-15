@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using SneakersShop.Application.Warehouse.Commands.ReserveStock;
 using SneakersShop.Domain.Brands;
 using SneakersShop.Domain.Catalog;
+using SneakersShop.Domain.Catalog.Enums;
 using SneakersShop.Domain.Catalog.ValueObjects;
 using SneakersShop.Domain.Common.Results;
 using SneakersShop.Domain.Warehouse;
@@ -27,24 +28,34 @@ public class ReserveStockHandlerTests(DatabaseFixture fixtureData)
         List<string> imagesUrls =
         [
             "https://test.com/image1.jpg",
-            "https://test.com/image2.jpg"
+        "https://test.com/image2.jpg"
         ];
         IEnumerable<ProductImage> productImages = imagesUrls.Select(url => new ProductImage(url));
 
         Size size = new(23);
 
         var brand = Brand.Create("Test Brand");
+        var category = Category.Create("Running");
+
         var product = Product.Create(
             brand.Id,
+            category.Id,
+            Gender.Men,
             "Model X",
             "Short Description",
-            100m,
-            productImages
-        );
-        var warehouseItem = WarehouseItem.Create(product.Id, size, 1).Value;
+            100m);
+
+        var variant = ProductVariant.Create(
+            product.Id,
+            "Black",
+            productImages);
+
+        var warehouseItem = WarehouseItem.Create(variant.Id, size, 1).Value;
 
         context.Brands.Add(brand);
+        context.Categories.Add(category);
         context.Products.Add(product);
+        context.ProductVariants.Add(variant);
         context.WarehouseItems.Add(warehouseItem);
         await context.SaveChangesAsync();
 
