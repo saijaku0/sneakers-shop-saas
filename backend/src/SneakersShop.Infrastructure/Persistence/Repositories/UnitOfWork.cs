@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 
-using SneakersShop.Application.Abstractions.Exceptions;
+using SneakersShop.Application.Common.Exceptions;
 using SneakersShop.Application.Abstractions.Repositories;
 
 namespace SneakersShop.Infrastructure.Persistence.Repositories;
