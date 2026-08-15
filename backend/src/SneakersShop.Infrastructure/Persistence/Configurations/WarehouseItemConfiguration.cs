@@ -20,10 +20,10 @@ internal sealed class WarehouseItemConfiguration : IEntityTypeConfiguration<Ware
         builder.Property(w => w.Quantity).IsRequired();
         builder.Property(w => w.ReservedQuantity).IsRequired();
         builder.Property(w => w.RowVersion).IsRowVersion();
-        builder.HasOne<Product>()
+        builder.HasOne<ProductVariant>()
             .WithMany()
-            .HasForeignKey(w => w.ProductId);
-        builder.HasIndex(w => new { w.ProductId })
-            .HasDatabaseName("IX_WarehouseItems_ProductId");
+            .HasForeignKey(w => w.ProductVariantId)
+            .OnDelete(DeleteBehavior.Restrict);
+        builder.HasIndex(w => w.ProductVariantId);
     }
 }
