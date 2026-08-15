@@ -18,7 +18,7 @@ namespace SneakersShop.Migrations.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.10")
+                .HasAnnotation("ProductVersion", "10.0.11")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -225,12 +225,40 @@ namespace SneakersShop.Migrations.Migrations
                     b.ToTable("CartItems", (string)null);
                 });
 
+            modelBuilder.Entity("SneakersShop.Domain.Catalog.Category", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Categories", (string)null);
+                });
+
             modelBuilder.Entity("SneakersShop.Domain.Catalog.Product", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<decimal>("BasePrice")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<Guid>("BrandId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("CategoryId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTimeOffset>("CreatedAt")
@@ -241,6 +269,11 @@ namespace SneakersShop.Migrations.Migrations
                         .HasMaxLength(2000)
                         .HasColumnType("nvarchar(2000)");
 
+                    b.Property<string>("Gender")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
@@ -249,10 +282,6 @@ namespace SneakersShop.Migrations.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
-                    b.Property<decimal>("Price")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
                     b.Property<DateTimeOffset?>("UpdatedAt")
                         .HasColumnType("datetimeoffset");
 
@@ -260,7 +289,36 @@ namespace SneakersShop.Migrations.Migrations
 
                     b.HasIndex("BrandId");
 
+                    b.HasIndex("CategoryId");
+
                     b.ToTable("Products", (string)null);
+                });
+
+            modelBuilder.Entity("SneakersShop.Domain.Catalog.ProductVariant", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Color")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId", "Color")
+                        .IsUnique();
+
+                    b.ToTable("ProductVariants", (string)null);
                 });
 
             modelBuilder.Entity("SneakersShop.Domain.Consumer.UserProfile", b =>
@@ -405,7 +463,7 @@ namespace SneakersShop.Migrations.Migrations
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("datetimeoffset");
 
-                    b.Property<Guid>("ProductId")
+                    b.Property<Guid>("ProductVariantId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("Quantity")
@@ -434,8 +492,7 @@ namespace SneakersShop.Migrations.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ProductId")
-                        .HasDatabaseName("IX_WarehouseItems_ProductId");
+                    b.HasIndex("ProductVariantId");
 
                     b.ToTable("WarehouseItems", (string)null);
                 });
@@ -612,26 +669,38 @@ namespace SneakersShop.Migrations.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("SneakersShop.Domain.Catalog.Category", null)
+                        .WithMany()
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("SneakersShop.Domain.Catalog.ProductVariant", b =>
+                {
+                    b.HasOne("SneakersShop.Domain.Catalog.Product", null)
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.OwnsMany("SneakersShop.Domain.Catalog.ValueObjects.ProductImage", "Images", b1 =>
                         {
-                            b1.Property<Guid>("ProductId");
+                            b1.Property<Guid>("ProductVariantId");
 
                             b1.Property<int>("__synthesizedOrdinal")
                                 .ValueGeneratedOnAddOrUpdate();
 
-                            b1.Property<string>("Url")
-                                .IsRequired();
+                            b1.HasKey("ProductVariantId", "__synthesizedOrdinal");
 
-                            b1.HasKey("ProductId", "__synthesizedOrdinal");
-
-                            b1.ToTable("Products");
+                            b1.ToTable("ProductVariants");
 
                             b1
                                 .ToJson("Images")
                                 .HasColumnType("nvarchar(max)");
 
                             b1.WithOwner()
-                                .HasForeignKey("ProductId");
+                                .HasForeignKey("ProductVariantId");
                         });
 
                     b.Navigation("Images");
@@ -695,10 +764,10 @@ namespace SneakersShop.Migrations.Migrations
 
             modelBuilder.Entity("SneakersShop.Domain.Warehouse.WarehouseItem", b =>
                 {
-                    b.HasOne("SneakersShop.Domain.Catalog.Product", null)
+                    b.HasOne("SneakersShop.Domain.Catalog.ProductVariant", null)
                         .WithMany()
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasForeignKey("ProductVariantId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
 
