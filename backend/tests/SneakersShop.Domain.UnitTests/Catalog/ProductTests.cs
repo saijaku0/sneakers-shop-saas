@@ -2,54 +2,50 @@
 
 using SneakersShop.Domain.Catalog;
 using SneakersShop.Domain.Catalog.DomainEvents;
-using SneakersShop.Domain.Catalog.ValueObjects;
+using SneakersShop.Domain.Catalog.Enums;
 
 namespace SneakersShop.Domain.UnitTests.Catalog;
 
 public class ProductTests
 {
-    private static ProductImage Image(string url = "https://cdn.example.com/a.jpg")
-        => new(url);
-
     private static Product CreateProduct()
         => Product.Create(
             Guid.CreateVersion7(),
+            Guid.CreateVersion7(),
+            Gender.Men,
             "Air Max 90",
             "Classic runner",
-            120m,
-            [Image()]);
+            120m);
 
     [Fact]
     public void Create_WithValidData_ReturnsActiveProduct()
     {
         var brandId = Guid.CreateVersion7();
+        var categoryId = Guid.CreateVersion7();
 
-        var product = Product.Create(brandId, "Air Max 90", "Classic runner", 120m, [Image()]);
+        var product = Product.Create(brandId, categoryId, Gender.Men, "Air Max 90", "Classic runner", 120m);
 
         product.BrandId.Should().Be(brandId);
+        product.CategoryId.Should().Be(categoryId);
+        product.Gender.Should().Be(Gender.Men);
         product.Model.Should().Be("Air Max 90");
         product.Description.Should().Be("Classic runner");
-        product.Price.Should().Be(120m);
+        product.BasePrice.Should().Be(120m);
         product.IsActive.Should().BeTrue();
-        product.Images.Should().ContainSingle();
         product.Id.Should().NotBe(Guid.Empty);
-    }
-
-    [Fact]
-    public void Create_CopiesImages_CallerListDoesNotLeakIn()
-    {
-        var images = new List<ProductImage> { Image() };
-
-        var product = Product.Create(Guid.CreateVersion7(), "M", "D", 100m, images);
-        images.Add(Image("https://cdn.example.com/b.jpg"));
-
-        product.Images.Should().ContainSingle();
     }
 
     [Fact]
     public void Create_WithEmptyBrandId_Throws()
     {
-        var act = () => Product.Create(Guid.Empty, "M", "D", 100m, [Image()]);
+        var act = () => Product.Create(Guid.Empty, Guid.CreateVersion7(), Gender.Men, "M", "D", 100m);
+        act.Should().Throw<ArgumentException>();
+    }
+
+    [Fact]
+    public void Create_WithEmptyCategoryId_Throws()
+    {
+        var act = () => Product.Create(Guid.CreateVersion7(), Guid.Empty, Gender.Men, "M", "D", 100m);
         act.Should().Throw<ArgumentException>();
     }
 
@@ -58,7 +54,7 @@ public class ProductTests
     [InlineData("   ")]
     public void Create_WithBlankModel_Throws(string model)
     {
-        var act = () => Product.Create(Guid.CreateVersion7(), model, "D", 100m, [Image()]);
+        var act = () => Product.Create(Guid.CreateVersion7(), Guid.CreateVersion7(), Gender.Men, model, "D", 100m);
         act.Should().Throw<ArgumentException>();
     }
 
@@ -67,7 +63,7 @@ public class ProductTests
     [InlineData("   ")]
     public void Create_WithBlankDescription_Throws(string description)
     {
-        var act = () => Product.Create(Guid.CreateVersion7(), "M", description, 100m, [Image()]);
+        var act = () => Product.Create(Guid.CreateVersion7(), Guid.CreateVersion7(), Gender.Men, "M", description, 100m);
         act.Should().Throw<ArgumentException>();
     }
 
@@ -76,14 +72,7 @@ public class ProductTests
     [InlineData(-1)]
     public void Create_WithNonPositivePrice_Throws(decimal price)
     {
-        var act = () => Product.Create(Guid.CreateVersion7(), "M", "D", price, [Image()]);
-        act.Should().Throw<ArgumentException>();
-    }
-
-    [Fact]
-    public void Create_WithNullImages_Throws()
-    {
-        var act = () => Product.Create(Guid.CreateVersion7(), "M", "D", 100m, null!);
+        var act = () => Product.Create(Guid.CreateVersion7(), Guid.CreateVersion7(), Gender.Men, "M", "D", price);
         act.Should().Throw<ArgumentException>();
     }
 
