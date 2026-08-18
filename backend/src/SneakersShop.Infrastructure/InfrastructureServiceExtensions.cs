@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
+using SneakersShop.Application.Abstractions.ApplicatonDbContext;
 using SneakersShop.Application.Abstractions.Authentication;
 using SneakersShop.Application.Abstractions.Repositories;
 using SneakersShop.Infrastructure.Persistence;
@@ -35,6 +36,8 @@ public static class InfrastructureServiceExtensions
             .AddIdentityCore<ApplicationUser>()
             .AddRoles<IdentityRole<Guid>>()
             .AddEntityFrameworkStores<AppDbContext>();
+
+        services.AddScoped<IApplicationDbContext>(sp => sp.GetRequiredService<AppDbContext>());
 
         // Register repositories and unit of work
         services.AddScoped<IWarehouseItemRepository, WarehouseItemRepository>();
