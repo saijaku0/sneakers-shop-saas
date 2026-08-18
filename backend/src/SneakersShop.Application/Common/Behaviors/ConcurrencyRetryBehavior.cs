@@ -1,9 +1,9 @@
 ﻿using MediatR;
 
 using SneakersShop.Application.Abstractions.Commands;
-using SneakersShop.Application.Abstractions.Exceptions;
+using SneakersShop.Application.Common.Exceptions;
 
-namespace SneakersShop.Application.Abstractions.Behaviors;
+namespace SneakersShop.Application.Common.Behaviors;
 
 public sealed class ConcurrencyRetryBehavior<TRequest, TResponse>
     : IPipelineBehavior<TRequest, TResponse>

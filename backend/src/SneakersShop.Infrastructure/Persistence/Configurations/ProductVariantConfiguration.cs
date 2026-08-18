@@ -20,5 +20,6 @@ internal sealed class ProductVariantConfiguration : IEntityTypeConfiguration<Pro
             .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasIndex(v => new { v.ProductId, v.Color }).IsUnique();
+        builder.Property(v => v.PreviewImageUrl).HasMaxLength(500).IsRequired();
     }
 }

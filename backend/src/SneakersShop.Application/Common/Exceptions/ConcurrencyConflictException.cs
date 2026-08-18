@@ -1,4 +1,4 @@
-﻿namespace SneakersShop.Application.Abstractions.Exceptions;
+﻿namespace SneakersShop.Application.Common.Exceptions;
 
 public sealed class ConcurrencyConflictException : Exception
 {

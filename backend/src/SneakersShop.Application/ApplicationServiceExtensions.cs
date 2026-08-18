@@ -4,7 +4,7 @@ using MediatR;
 
 using Microsoft.Extensions.DependencyInjection;
 
-using SneakersShop.Application.Abstractions.Behaviors;
+using SneakersShop.Application.Common.Behaviors;
 
 namespace SneakersShop.Application;
 
