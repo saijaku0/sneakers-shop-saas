@@ -90,3 +90,5 @@ export {
   DropdownMenuSubTrigger,
   DropdownMenuSubContent,
 } from "./dropdown-menu";
+
+export { CatalogBreadcrumbs } from "./catalog-breadcrumbs";
