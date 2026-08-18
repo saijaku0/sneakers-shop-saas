@@ -11,6 +11,7 @@ public sealed class ProductVariant : AggregateRoot
 
     public Guid ProductId { get; private init; }
     public string Color { get; private set; } = null!;
+    public string PreviewImageUrl { get; private set; } = null!;
 
     private ProductVariant() { }
 
@@ -20,6 +21,7 @@ public sealed class ProductVariant : AggregateRoot
         ProductId = productId;
         Color = color;
         _images.AddRange(images);
+        PreviewImageUrl = _images[0].Url;
     }
 
     public static ProductVariant Create(Guid productId, string color, IEnumerable<ProductImage> images)
@@ -43,6 +45,7 @@ public sealed class ProductVariant : AggregateRoot
         Guard.Against.NullOrEmpty(images);
         _images.Clear();
         _images.AddRange(images);
+        PreviewImageUrl = _images[0].Url;
         Touch();
     }
 }
