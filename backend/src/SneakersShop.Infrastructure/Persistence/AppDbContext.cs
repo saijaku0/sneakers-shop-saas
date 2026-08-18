@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
+using SneakersShop.Application.Abstractions.ApplicatonDbContext;
 using SneakersShop.Domain.Brands;
 using SneakersShop.Domain.Carts;
 using SneakersShop.Domain.Catalog;
@@ -15,7 +16,7 @@ using SneakersShop.Infrastructure.Persistence.Identity;
 namespace SneakersShop.Infrastructure.Persistence;
 
 public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
-    : IdentityDbContext<ApplicationUser, IdentityRole<Guid>, Guid>(options)
+    : IdentityDbContext<ApplicationUser, IdentityRole<Guid>, Guid>(options), IApplicationDbContext
 {
     public DbSet<Brand> Brands => Set<Brand>();
     public DbSet<Cart> Carts => Set<Cart>();
