@@ -5,7 +5,7 @@ namespace SneakersShop.Domain.Catalog.ValueObjects;
 public sealed record ProductImage
 {
     private const int MaxUrlLength = 2048;
-    public string Url { get; }
+    public string Url { get; private set; }
     public ProductImage(string url)
     {
         if (string.IsNullOrWhiteSpace(url))

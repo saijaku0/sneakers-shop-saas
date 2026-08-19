@@ -35,15 +35,16 @@ public class GetProductsQueryTests(DatabaseFixture fixture)
 
         var nike = Brand.Create("Nike");
         var adidas = Brand.Create("Adidas");
+        var puma = Brand.Create("Puma");
         var running = Category.Create("Running");
         var sneakers = Category.Create("Sneakers");
 
-        ctx.Brands.AddRange(nike, adidas);
+        ctx.Brands.AddRange(nike, adidas, puma);
         ctx.Categories.AddRange(running, sneakers);
 
         var specs = new[]
         {
-            (nike, running, Gender.Men, "Pegasus", 120m,"Black", 27.0m, 5),
+            (nike, running, Gender.Men, "Pegasus", 120m, "Black", 27.0m, 5),
             (nike, sneakers, Gender.Women, "AirForce", 110m, "White", 25.0m, 3),
             (adidas, running, Gender.Men, "Ultraboost", 180m, "Blue", 27.0m, 0),
             (adidas, sneakers, Gender.Unisex, "Samba", 90m, "Black", 26.0m, 7),
@@ -60,6 +61,18 @@ public class GetProductsQueryTests(DatabaseFixture fixture)
             ctx.Products.Add(product);
             ctx.ProductVariants.Add(variant);
             ctx.WarehouseItems.Add(warehouse);
+        }
+
+        var multi = Product.Create(puma.Id, sneakers.Id, Gender.Women, "MultiColor", "MultiColor desc", 200m);
+        ctx.Products.Add(multi);
+
+        var colors = new[] { "Red", "Green", "Blue", "Yellow", "Purple", "Orange" };
+        foreach (var c in colors)
+        {
+            var v = ProductVariant.Create(multi.Id, c, [new ProductImage($"https://cdn.test/{c}.jpg")]);
+            var w = WarehouseItem.Create(v.Id, new Size(28.0m), 4).Value;
+            ctx.ProductVariants.Add(v);
+            ctx.WarehouseItems.Add(w);
         }
 
         await ctx.SaveChangesAsync();
@@ -81,9 +94,9 @@ public class GetProductsQueryTests(DatabaseFixture fixture)
         var result = await sender.Send(new GetProductsQuery(null, null, null, PageSize: 2));
 
         result.IsSuccess.Should().BeTrue();
-        result.Value.TotalCount.Should().Be(4);
+        result.Value.TotalCount.Should().Be(5);
         result.Value.Items.Should().HaveCount(2);
-        result.Value.TotalPages.Should().Be(2);
+        result.Value.TotalPages.Should().Be(3);
         result.Value.HasNextPage.Should().BeTrue();
     }
 
@@ -143,19 +156,34 @@ public class GetProductsQueryTests(DatabaseFixture fixture)
         var result = await sender.Send(new GetProductsQuery(null, null, null, InStockOnly: true));
 
         result.IsSuccess.Should().BeTrue();
-        result.Value.TotalCount.Should().Be(3);
+        result.Value.TotalCount.Should().Be(4);
         result.Value.Items.Should().NotContain(i => i.Model == "Ultraboost");
     }
 
     [Fact]
-    public async Task Projection_IncludesPreviewImageAndColorCount()
+    public async Task Projection_IncludesVariantPreviewsAndColorCount()
     {
         var sender = await BuildSenderAndSeedAsync();
 
         var result = await sender.Send(new GetProductsQuery(null, null, "Nike"));
 
         var item = result.Value.Items.First();
-        item.PreviewImageUrl.Should().Be("https://cdn.test/x.jpg");
+        item.Variants.Should().ContainSingle();
+        item.Variants[0].ImageUrl.Should().Be("https://cdn.test/x.jpg");
+        item.Variants[0].ColorName.Should().NotBeNullOrEmpty();
         item.ColorCount.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task Projection_CapsVariantsAtFour_ButColorCountIsFull()
+    {
+        var sender = await BuildSenderAndSeedAsync();
+
+        var result = await sender.Send(new GetProductsQuery(null, null, "Puma"));
+
+        var item = result.Value.Items.First();
+        item.Variants.Should().HaveCount(4);
+        item.ColorCount.Should().Be(6);
+        item.Variants.Should().OnlyContain(v => v.ImageUrl != string.Empty);
     }
 }
