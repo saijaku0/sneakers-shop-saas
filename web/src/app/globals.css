@@ -8,6 +8,12 @@
   --text-header: 1.125rem;
   --text-header--font-weight: 700;
   --text-header--letter-spacing: 0.05em;
+  --animate-marquee: marquee 30s linear infinite;
+}
+
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
 }
 
 @theme inline {
