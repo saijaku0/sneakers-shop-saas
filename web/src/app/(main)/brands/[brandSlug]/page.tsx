@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 
 import { parseBrandSlug } from "@/entities/brand";
+import { Container } from "@/shared/ui";
 
 interface PageProps {
   params: Promise<{
@@ -18,14 +19,16 @@ export default async function BrandPage({ params }: PageProps) {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold">{brand.name}</h1>
+    <Container className="pt-12">
+      <div className="container mx-auto px-4 py-8">
+        <h1 className="text-3xl font-bold">{brand.name}</h1>
 
-      <div className="flex flex-col gap-8 md:flex-row">
-        <aside className="w-full shrink-0 md:w-64">Brand filters</aside>
+        <div className="flex flex-col gap-8 md:flex-row">
+          <aside className="w-full shrink-0 md:w-64">Brand filters</aside>
 
-        <main className="flex-1">Product grid for {brand.name}</main>
+          <main className="flex-1">Product grid for {brand.name}</main>
+        </div>
       </div>
-    </div>
+    </Container>
   );
 }

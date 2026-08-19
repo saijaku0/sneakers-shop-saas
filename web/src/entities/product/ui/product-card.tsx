@@ -1,41 +1,81 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
+import { useState } from "react";
 import { ProductListItem } from "../model/types";
 
 interface ProductCardProps {
   product: ProductListItem;
-  children?: React.ReactNode;
 }
 
-export function ProductCard({ product, children }: ProductCardProps) {
+export function ProductCard({ product }: ProductCardProps) {
+  const [activeImage, setActiveImage] = useState(product.variants[0].imageUrl);
+
   return (
-    <article className="group flex flex-col cursor-pointer border border-transparent hover:border-foreground transition-all duration-100 hover:scale-y-[1.05] origin-top hover:z-50">
-      <div className="relative aspect-4/3 sm:aspect-square w-full bg-background overflow-hidden">
-        <img
-          src={product.imageUrl}
-          alt={product.model}
-          className="h-full w-full object-cover object-center transition-transform duration-500"
-        />
+    <article
+      className="group relative flex flex-col cursor-pointer"
+      onMouseLeave={() => setActiveImage(product.variants[0].imageUrl)}
+    >
+      <div
+        className="absolute inset-x-0 top-0 z-0 flex flex-col border border-transparent
+                      bg-background group-hover:z-20 group-hover:border-foreground transition-colors"
+      >
+        <div className="relative aspect-4/3 sm:aspect-square w-full bg-background overflow-hidden">
+          <img
+            src={activeImage}
+            alt={product.model}
+            className="h-full w-full object-cover object-center"
+          />
+        </div>
+
+        <div className="hidden group-hover:flex py-1">
+          {product.variants.map((v) => (
+            <button
+              key={v.variantId}
+              type="button"
+              onMouseEnter={() => setActiveImage(v.imageUrl)}
+              onFocus={() => setActiveImage(v.imageUrl)}
+              aria-label={v.colorName}
+              className="h-9 w-9 shrink-0 overflow-hidden bg-background border-b-2 hover:border-b-foreground transition-colors"
+            >
+              <img
+                src={v.imageUrl}
+                alt={v.colorName}
+                className="h-full w-full object-cover"
+              />
+            </button>
+          ))}
+        </div>
+
+        <div className="flex flex-col p-2 pt-3 pb-1 text-left">
+          <div className="flex justify-between items-center">
+            <span className="text-sm font-bold text-foreground mb-1">
+              {product.basePrice}
+            </span>
+            <span className="text-sm text-foreground/60 mt-0.5">
+              {product.variantsCount}{" "}
+              {product.variantsCount === 1 ? "colour" : "colours"}
+            </span>
+          </div>
+          <h3 className="font-normal text-foreground leading-tight">
+            {product.model}
+          </h3>
+          <span className="text-sm text-foreground/60 mt-0.5">
+            {product.brand}
+          </span>
+        </div>
       </div>
 
-      <div className="flex flex-col pt-3 pb-1 text-left p-2 bg-background">
-        <span className="text-sm font-bold text-foreground mb-1">
-          € {product.basePrice}
-        </span>
-
-        <h3 className="text-sm font-normal text-foreground leading-tight">
-          {product.model}
-        </h3>
-
-        <span className="text-sm text-foreground mt-0.5">{product.brand}</span>
-
-        <span className="text-sm text-foreground mt-0.5">
-          {product.variantsCount}{" "}
-          {product.variantsCount === 1 ? "colour" : "colours"}
-        </span>
-
-        <div className="mt-4">{children}</div>
+      <div className="invisible flex flex-col" aria-hidden>
+        <div className="aspect-4/3 sm:aspect-square w-full" />
+        <div className="flex flex-col p-2 pt-3 pb-1">
+          <div className="flex justify-between items-center">
+            <span className="text-sm font-bold mb-1">{product.basePrice}</span>
+            <span className="text-sm mt-0.5">.</span>
+          </div>
+          <h3 className="font-normal leading-tight">{product.model}</h3>
+          <span className="text-sm mt-0.5">{product.brand}</span>
+        </div>
       </div>
     </article>
   );

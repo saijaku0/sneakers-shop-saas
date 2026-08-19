@@ -92,3 +92,17 @@ export {
 } from "./dropdown-menu";
 
 export { CatalogBreadcrumbs } from "./catalog-breadcrumbs";
+
+export {
+  type CarouselApi,
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselPrevious,
+  CarouselNext,
+  useCarousel,
+} from "./carousel";
+
+export { Progress } from "./progress";
+
+export { Badge, badgeVariants } from "./badge";

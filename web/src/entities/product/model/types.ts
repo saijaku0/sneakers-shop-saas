@@ -3,6 +3,12 @@ export interface ProductListItem {
   model: string;
   brand: string;
   basePrice: number;
-  imageUrl: string;
   variantsCount: number;
+  variants: ProductVariantPreview[];
+}
+
+export interface ProductVariantPreview {
+  variantId: string;
+  colorName: string;
+  imageUrl: string;
 }

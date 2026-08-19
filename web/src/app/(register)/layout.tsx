@@ -1,13 +1,11 @@
-import { Header } from "@/widgets/header";
-
-export default function MainLayout({
+export default function SignUpLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
     <>
-      <Header />
+      <div>1011</div>
       <main>{children}</main>
     </>
   );
