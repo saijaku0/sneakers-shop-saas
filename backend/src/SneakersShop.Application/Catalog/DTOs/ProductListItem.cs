@@ -5,5 +5,5 @@ public record ProductListItem(
     string Model,
     string BrandName,
     decimal BasePrice,
-    string? PreviewImageUrl,
+    IReadOnlyList<ProductVariantPreviewDto> Variants,
     int ColorCount);
