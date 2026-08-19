@@ -1,4 +1,3 @@
-import { Container } from "@/shared/ui";
 import { Header } from "@/widgets/header";
 
 export default function MainLayout({
@@ -9,9 +8,7 @@ export default function MainLayout({
   return (
     <>
       <Header />
-      <Container>
-        <main>{children}</main>
-      </Container>
+      <main>{children}</main>
     </>
   );
 }
