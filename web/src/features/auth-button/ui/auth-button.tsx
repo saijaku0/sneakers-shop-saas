@@ -18,26 +18,28 @@ import {
   DropdownMenuTrigger,
 } from "@/shared/ui";
 import { selectToken, clearToken } from "@/entities/session";
-import { useLoginMutation } from "../api/auth-api";
 import { cn } from "@/shared/lib";
+import { User } from "lucide-react";
+import { LoginForm } from "./login-form";
+import { useState } from "react";
 
 export function AuthButton({
   orientation = "row",
 }: {
   orientation?: "row" | "col";
 }) {
-  const [login, { isLoading }] = useLoginMutation();
+  const [signInOpen, setSignInOpen] = useState(false);
   const token = useSelector(selectToken);
   const dispatch = useDispatch();
 
   if (token) {
     return (
-      <DropdownMenu>
+      <DropdownMenu modal={false}>
         <DropdownMenuTrigger asChild>
           <button className="rounded-full outline-none focus-visible:ring-2 focus-visible:ring-ring">
             <Avatar className="size-9 cursor-pointer">
               <AvatarFallback className="bg-primary text-primary-foreground text-sm font-bold">
-                US
+                <User className="size-6" />
               </AvatarFallback>
             </Avatar>
           </button>
@@ -68,7 +70,7 @@ export function AuthButton({
         orientation === "col" ? "flex-col w-full" : "items-center",
       )}
     >
-      <Dialog>
+      <Dialog open={signInOpen} onOpenChange={setSignInOpen}>
         <DialogTrigger asChild>
           <Button variant="ghost">Sign in</Button>
         </DialogTrigger>
@@ -76,18 +78,7 @@ export function AuthButton({
           <DialogHeader>
             <DialogTitle>Sign in</DialogTitle>
           </DialogHeader>
-          {/* Temporary stub: fires login with hardcoded credentials on click. Replace with real form later. */}
-          <div className="py-8 text-center text-sm text-muted-foreground">
-            Login form goes here
-          </div>
-          <Button
-            onClick={() =>
-              login({ email: "ivan@test.com", password: "Password123!" })
-            }
-            disabled={isLoading}
-          >
-            {isLoading ? "Signing in..." : "Sign in (test)"}
-          </Button>
+          <LoginForm onSuccess={() => setSignInOpen(false)} />
         </DialogContent>
       </Dialog>
 
