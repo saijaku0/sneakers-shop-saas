@@ -1,6 +1,6 @@
 import { api } from "@/shared/api";
-import { LoginRequest, Tokens } from "../lib/types";
-import { setToken } from "@/entities/session/model/session-slice";
+import { LoginRequest } from "../lib/types";
+import { setToken, Tokens } from "@/entities/session";
 
 export const authApi = api.injectEndpoints({
   endpoints: (builder) => ({
@@ -12,7 +12,7 @@ export const authApi = api.injectEndpoints({
       }),
       async onQueryStarted(_, { dispatch, queryFulfilled }) {
         const { data } = await queryFulfilled;
-        dispatch(setToken(data.accessToken));
+        dispatch(setToken(data));
       },
       invalidatesTags: ["Viewer"],
     }),
