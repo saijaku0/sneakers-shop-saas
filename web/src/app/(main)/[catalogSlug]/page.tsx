@@ -20,7 +20,7 @@ export default async function DynamicCatalogRoute({ params }: PageProps) {
 
   return (
     <Container className="pt-12">
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto py-8">
         <CatalogBreadcrumbs gender={gender} category={category} />
 
         <div className="flex flex-col gap-8 md:flex-row">
