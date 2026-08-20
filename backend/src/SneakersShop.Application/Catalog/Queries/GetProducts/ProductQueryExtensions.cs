@@ -7,20 +7,20 @@ namespace SneakersShop.Application.Catalog.Queries.GetProducts;
 internal static class ProductQueryExtensions
 {
     public static IQueryable<Product> ApplyFilters(
-        this IQueryable<Product> query,
-        GetProductsQuery request,
-        IApplicationDbContext context)
+    this IQueryable<Product> query,
+    GetProductsQuery request,
+    IApplicationDbContext context)
     {
         if (request.Gender is not null)
             query = query.Where(p => p.Gender == request.Gender);
 
-        if (!string.IsNullOrWhiteSpace(request.Brand))
+        if (request.Brands is { Count: > 0 })
             query = query.Where(p =>
-                context.Brands.Any(b => b.Id == p.BrandId && b.Name == request.Brand));
+                context.Brands.Any(b => b.Id == p.BrandId && request.Brands.Contains(b.Name)));
 
-        if (!string.IsNullOrWhiteSpace(request.Category))
+        if (request.Categories is { Count: > 0 })
             query = query.Where(p =>
-                context.Categories.Any(c => c.Id == p.CategoryId && c.Name == request.Category));
+                context.Categories.Any(c => c.Id == p.CategoryId && request.Categories.Contains(c.Name)));
 
         if (request.MinPrice is not null)
             query = query.Where(p => p.BasePrice >= request.MinPrice);
@@ -28,15 +28,15 @@ internal static class ProductQueryExtensions
         if (request.MaxPrice is not null)
             query = query.Where(p => p.BasePrice <= request.MaxPrice);
 
-        if (!string.IsNullOrWhiteSpace(request.Color))
+        if (request.Colors is { Count: > 0 })
             query = query.Where(p => context.ProductVariants
-                .Any(v => v.ProductId == p.Id && v.Color == request.Color));
+                .Any(v => v.ProductId == p.Id && request.Colors.Contains(v.Color)));
 
-        if (request.Size is not null)
+        if (request.Sizes is { Count: > 0 })
             query = query.Where(p => context.ProductVariants
                 .Any(v => v.ProductId == p.Id && context.WarehouseItems
                     .Any(w => w.ProductVariantId == v.Id
-                           && w.Size.ValueCm == request.Size
+                           && request.Sizes.Contains(w.Size.ValueCm)
                            && w.Quantity - w.ReservedQuantity > 0)));
 
         if (request.InStockOnly == true)
