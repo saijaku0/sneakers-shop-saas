@@ -1,12 +1,12 @@
-import { api } from "@/shared/api";
-import { LoginRequest } from "../lib/types";
 import { setToken, Tokens } from "@/entities/session";
+import { api } from "@/shared/api";
+import { RegistrationRequest } from "../lib/types";
 
-export const authApi = api.injectEndpoints({
+export const registerApi = api.injectEndpoints({
   endpoints: (builder) => ({
-    login: builder.mutation<Tokens, LoginRequest>({
+    register: builder.mutation<Tokens, RegistrationRequest>({
       query: (credentials) => ({
-        url: "/auth/login",
+        url: "/auth/register",
         method: "POST",
         body: credentials,
       }),
@@ -20,4 +20,4 @@ export const authApi = api.injectEndpoints({
   overrideExisting: false,
 });
 
-export const { useLoginMutation } = authApi;
+export const { useRegisterMutation } = registerApi;

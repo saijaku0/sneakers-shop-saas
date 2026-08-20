@@ -1,5 +1,5 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import { SessionState } from "../lib/types";
+import { SessionState, Tokens } from "../lib/types";
 
 const initialState: SessionState = {
   token:
@@ -10,9 +10,10 @@ const sessionSlice = createSlice({
   name: "session",
   initialState,
   reducers: {
-    setToken: (state, { payload }: PayloadAction<string>) => {
-      state.token = payload;
-      localStorage.setItem("accessToken", payload);
+    setToken: (state, { payload }: PayloadAction<Tokens>) => {
+      state.token = payload.accessToken;
+      localStorage.setItem("accessToken", payload.accessToken);
+      localStorage.setItem("refreshToken", payload.refreshToken);
     },
     clearToken: (state) => {
       state.token = null;
