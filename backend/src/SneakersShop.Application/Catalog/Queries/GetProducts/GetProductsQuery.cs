@@ -7,14 +7,14 @@ namespace SneakersShop.Application.Catalog.Queries.GetProducts;
 
 public record GetProductsQuery(
     Gender? Gender,
-    string? Category,
-    string? Brand,
+    IReadOnlyList<string>? Categories = null,
+    IReadOnlyList<string>? Brands = null,
     decimal? MinPrice = null,
     decimal? MaxPrice = null,
-    string? Color = null,
-    decimal? Size = null,
+    IReadOnlyList<string>? Colors = null,
+    IReadOnlyList<decimal>? Sizes = null,
     bool? InStockOnly = null,
-    string? SortBy = null, // "price_asc" | "price_desc" | "newest" | "name"
+    string? SortBy = null,
     int PageNumber = 1,
     int PageSize = 20)
     : IQuery<PageResult<ProductListItem>>;

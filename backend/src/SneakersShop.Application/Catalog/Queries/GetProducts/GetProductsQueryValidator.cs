@@ -27,9 +27,25 @@ public sealed class GetProductsQueryValidator : AbstractValidator<GetProductsQue
             .When(x => x.MaxPrice.HasValue && x.MinPrice.HasValue)
             .WithMessage("Max price must be greater than or equal to Min price.");
 
-        RuleFor(x => x.Size)
-            .GreaterThan(0).When(x => x.Size.HasValue)
+        RuleForEach(x => x.Sizes)
+            .GreaterThan(0)
+            .When(x => x.Sizes is { Count: > 0 })
             .WithMessage("Size must be greater than 0.");
+
+        RuleForEach(x => x.Colors)
+            .NotEmpty()
+            .When(x => x.Colors is { Count: > 0 })
+            .WithMessage("Color values must not be empty.");
+
+        RuleForEach(x => x.Brands)
+            .NotEmpty()
+            .When(x => x.Brands is { Count: > 0 })
+            .WithMessage("Brand values must not be empty.");
+
+        RuleForEach(x => x.Categories)
+            .NotEmpty()
+            .When(x => x.Categories is { Count: > 0 })
+            .WithMessage("Category values must not be empty.");
 
         var allowedSortColumns = new[] { "price_asc", "price_desc", "newest", "name" };
         RuleFor(x => x.SortBy)
