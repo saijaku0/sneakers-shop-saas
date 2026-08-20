@@ -46,7 +46,7 @@ export function HeroCarousel() {
   const [count, setCount] = useState(0);
 
   const [plugin] = useState(() =>
-    Autoplay({ delay: 2000, stopOnInteraction: true }),
+    Autoplay({ delay: 6000, stopOnInteraction: true }),
   );
 
   const progress = (current * 100) / count;
