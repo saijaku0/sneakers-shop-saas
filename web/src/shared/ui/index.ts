@@ -1,6 +1,9 @@
 export { Button } from "./button";
 export { Container } from "./container";
 export { Logo } from "./logo";
+export { StepProgress } from "./step-progress";
+export { Input } from "./input";
+export { Label } from "./label";
 
 export {
   Menubar,
