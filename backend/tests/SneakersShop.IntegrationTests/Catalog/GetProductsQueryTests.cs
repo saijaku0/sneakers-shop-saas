@@ -91,7 +91,7 @@ public class GetProductsQueryTests(DatabaseFixture fixture)
     {
         var sender = await BuildSenderAndSeedAsync();
 
-        var result = await sender.Send(new GetProductsQuery(null, null, null, PageSize: 2));
+        var result = await sender.Send(new GetProductsQuery(Gender: null, PageSize: 2));
 
         result.IsSuccess.Should().BeTrue();
         result.Value.TotalCount.Should().Be(5);
@@ -105,7 +105,7 @@ public class GetProductsQueryTests(DatabaseFixture fixture)
     {
         var sender = await BuildSenderAndSeedAsync();
 
-        var result = await sender.Send(new GetProductsQuery(Gender.Men, null, null));
+        var result = await sender.Send(new GetProductsQuery(Gender: Gender.Men));
 
         result.IsSuccess.Should().BeTrue();
         result.Value.TotalCount.Should().Be(2);
@@ -113,11 +113,11 @@ public class GetProductsQueryTests(DatabaseFixture fixture)
     }
 
     [Fact]
-    public async Task FilterByBrandName_ReturnsOnlyThatBrand()
+    public async Task FilterBySingleBrand_ReturnsOnlyThatBrand()
     {
         var sender = await BuildSenderAndSeedAsync();
 
-        var result = await sender.Send(new GetProductsQuery(null, null, "Nike"));
+        var result = await sender.Send(new GetProductsQuery(Gender: null, Brands: ["Nike"]));
 
         result.IsSuccess.Should().BeTrue();
         result.Value.TotalCount.Should().Be(2);
@@ -125,11 +125,36 @@ public class GetProductsQueryTests(DatabaseFixture fixture)
     }
 
     [Fact]
+    public async Task FilterByMultipleBrands_ReturnsUnionOfBrands()
+    {
+        var sender = await BuildSenderAndSeedAsync();
+
+        var result = await sender.Send(new GetProductsQuery(Gender: null, Brands: ["Nike", "Puma"]));
+
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Items.Should().OnlyContain(i => i.BrandName == "Nike" || i.BrandName == "Puma");
+        result.Value.TotalCount.Should().Be(3);
+    }
+
+    [Fact]
+    public async Task FilterByMultipleColors_ReturnsUnionOfColors()
+    {
+        var sender = await BuildSenderAndSeedAsync();
+
+        var result = await sender.Send(new GetProductsQuery(Gender: null, Colors: ["White", "Blue"]));
+
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Items.Should().OnlyContain(i =>
+            i.Model == "AirForce" || i.Model == "Ultraboost" || i.Model == "MultiColor");
+        result.Value.TotalCount.Should().Be(3);
+    }
+
+    [Fact]
     public async Task FilterByPriceRange_ReturnsWithinRange()
     {
         var sender = await BuildSenderAndSeedAsync();
 
-        var result = await sender.Send(new GetProductsQuery(null, null, null, MinPrice: 100, MaxPrice: 130));
+        var result = await sender.Send(new GetProductsQuery(Gender: null, MinPrice: 100, MaxPrice: 130));
 
         result.IsSuccess.Should().BeTrue();
         result.Value.TotalCount.Should().Be(2);
@@ -137,11 +162,11 @@ public class GetProductsQueryTests(DatabaseFixture fixture)
     }
 
     [Fact]
-    public async Task FilterBySize_JoinsThroughVariantAndWarehouse()
+    public async Task FilterBySingleSize_JoinsThroughVariantAndWarehouse()
     {
         var sender = await BuildSenderAndSeedAsync();
 
-        var result = await sender.Send(new GetProductsQuery(null, null, null, Size: 27.0m));
+        var result = await sender.Send(new GetProductsQuery(Gender: null, Sizes: [27.0m]));
 
         result.IsSuccess.Should().BeTrue();
         result.Value.Items.Should().OnlyContain(i => i.Model == "Pegasus");
@@ -149,11 +174,23 @@ public class GetProductsQueryTests(DatabaseFixture fixture)
     }
 
     [Fact]
+    public async Task FilterByMultipleSizes_ReturnsUnionOfSizes()
+    {
+        var sender = await BuildSenderAndSeedAsync();
+
+        var result = await sender.Send(new GetProductsQuery(Gender: null, Sizes: [25.0m, 26.0m]));
+
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Items.Should().OnlyContain(i => i.Model == "AirForce" || i.Model == "Samba");
+        result.Value.TotalCount.Should().Be(2);
+    }
+
+    [Fact]
     public async Task InStockOnly_ExcludesUnavailable()
     {
         var sender = await BuildSenderAndSeedAsync();
 
-        var result = await sender.Send(new GetProductsQuery(null, null, null, InStockOnly: true));
+        var result = await sender.Send(new GetProductsQuery(Gender: null, InStockOnly: true));
 
         result.IsSuccess.Should().BeTrue();
         result.Value.TotalCount.Should().Be(4);
@@ -165,7 +202,7 @@ public class GetProductsQueryTests(DatabaseFixture fixture)
     {
         var sender = await BuildSenderAndSeedAsync();
 
-        var result = await sender.Send(new GetProductsQuery(null, null, "Nike"));
+        var result = await sender.Send(new GetProductsQuery(Gender: null, Brands: ["Nike"]));
 
         var item = result.Value.Items.First();
         item.Variants.Should().ContainSingle();
@@ -179,7 +216,7 @@ public class GetProductsQueryTests(DatabaseFixture fixture)
     {
         var sender = await BuildSenderAndSeedAsync();
 
-        var result = await sender.Send(new GetProductsQuery(null, null, "Puma"));
+        var result = await sender.Send(new GetProductsQuery(Gender: null, Brands: ["Puma"]));
 
         var item = result.Value.Items.First();
         item.Variants.Should().HaveCount(4);
