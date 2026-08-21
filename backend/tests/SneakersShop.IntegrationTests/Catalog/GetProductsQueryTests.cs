@@ -219,7 +219,7 @@ public class GetProductsQueryTests(DatabaseFixture fixture)
         var result = await sender.Send(new GetProductsQuery(Gender: null, Brands: ["Puma"]));
 
         var item = result.Value.Items.First();
-        item.Variants.Should().HaveCount(4);
+        item.Variants.Should().HaveCount(6);
         item.ColorCount.Should().Be(6);
         item.Variants.Should().OnlyContain(v => v.ImageUrl != string.Empty);
     }
