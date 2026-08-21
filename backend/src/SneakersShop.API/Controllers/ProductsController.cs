@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 using SneakersShop.API.Extensions;
+using SneakersShop.Application.Catalog.Queries.GetFilters;
 using SneakersShop.Application.Catalog.Queries.GetProductItem;
 using SneakersShop.Application.Catalog.Queries.GetProducts;
 
@@ -30,6 +31,15 @@ public sealed class ProductsController(ISender sender) : ControllerBase
     {
         var query = new GetProductItemQuery(id);
         var result = await sender.Send(query, cancellationToken);
+        return result.ToActionResult();
+    }
+
+    [HttpGet("filters")]
+    public async Task<IActionResult> GetFilters(CancellationToken cancellationToken)
+    {
+        var query = new GetFiltersQuery();
+        var result = await sender.Send(query, cancellationToken);
+
         return result.ToActionResult();
     }
 }

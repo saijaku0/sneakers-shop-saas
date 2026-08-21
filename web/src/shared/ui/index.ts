@@ -4,6 +4,11 @@ export { Logo } from "./logo";
 export { StepProgress } from "./step-progress";
 export { Input } from "./input";
 export { Label } from "./label";
+export { Progress } from "./progress";
+export { Badge, badgeVariants } from "./badge";
+export { CatalogBreadcrumbs } from "./catalog-breadcrumbs";
+export { Slider } from "./slider";
+export { Checkbox } from "./cheakbox";
 
 export {
   Menubar,
@@ -94,8 +99,6 @@ export {
   DropdownMenuSubContent,
 } from "./dropdown-menu";
 
-export { CatalogBreadcrumbs } from "./catalog-breadcrumbs";
-
 export {
   type CarouselApi,
   Carousel,
@@ -106,6 +109,25 @@ export {
   useCarousel,
 } from "./carousel";
 
-export { Progress } from "./progress";
+export {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "./pagination";
 
-export { Badge, badgeVariants } from "./badge";
+export {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectScrollDownButton,
+  SelectScrollUpButton,
+  SelectSeparator,
+  SelectTrigger,
+  SelectValue,
+} from "./select";
