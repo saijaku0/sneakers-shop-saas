@@ -71,7 +71,6 @@ internal static class ProductQueryExtensions
             context.ProductVariants
                 .Where(v => v.ProductId == p.Id)
                 .OrderBy(v => v.Id)
-                .Take(4)
                 .Select(v => new ProductVariantPreviewDto(
                     v.Id,
                     v.Color,
