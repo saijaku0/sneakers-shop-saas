@@ -41,6 +41,7 @@ public static class InfrastructureServiceExtensions
 
         // Register repositories and unit of work
         services.AddScoped<IWarehouseItemRepository, WarehouseItemRepository>();
+        services.AddScoped<ICartRepository, CartRepository>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
 
         // JWT settings — bound once into a typed object, single source of truth
@@ -50,6 +51,7 @@ public static class InfrastructureServiceExtensions
         services.Configure<JwtSettings>(configuration.GetSection("JwtSettings"));
         services.AddScoped<IAuthenticationService, AuthenticationService>();
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+        services.AddScoped<ICurrentUserService, CurrentUserService>();
         services.AddScoped<IJwtService, JwtService>();
 
         services.AddAuthentication(options =>
