@@ -36,6 +36,7 @@ export interface ProductsPageResult {
 }
 
 export interface ProductSize {
+  warehouseItemId: string;
   sizeCm: number;
   inStock: boolean;
 }
