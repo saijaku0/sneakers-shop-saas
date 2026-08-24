@@ -36,6 +36,7 @@ public sealed class GetProductItemQueryHandler(IApplicationDbContext context)
                         context.WarehouseItems
                             .Where(w => w.ProductVariantId == v.Id)
                             .Select(w => new SizeAvailability(
+                                w.Id,
                                 w.Size.ValueCm,
                                 w.Quantity - w.ReservedQuantity > 0))
                             .ToList()))
