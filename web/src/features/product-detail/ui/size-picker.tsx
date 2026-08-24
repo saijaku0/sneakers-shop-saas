@@ -1,6 +1,7 @@
 "use client";
 
 import type { ProductSize } from "@/entities/product";
+import { Button } from "@/shared/ui";
 
 export function SizePicker({
   sizes,
@@ -8,8 +9,8 @@ export function SizePicker({
   onSelect,
 }: {
   sizes: ProductSize[];
-  selected: number | null;
-  onSelect: (sizeCm: number) => void;
+  selected: ProductSize | null;
+  onSelect: (sizeCm: ProductSize) => void;
 }) {
   if (sizes.length === 0) {
     return <p className="text-sm text-muted-foreground">No sizes available</p>;
@@ -19,23 +20,23 @@ export function SizePicker({
     <div className="flex flex-col gap-3">
       <div className="flex items-center justify-between">
         <p className="text-sm font-medium text-foreground">Size (cm)</p>
-        <button
-          type="button"
+        <Button
+          variant="link"
           className="text-sm text-muted-foreground underline hover:text-foreground"
         >
           Size guide
-        </button>
+        </Button>
       </div>
 
       <div className="grid grid-cols-5 gap-1">
         {sizes.map((s) => {
-          const isSelected = s.sizeCm === selected;
+          const isSelected = selected?.warehouseItemId === s.warehouseItemId;
           return (
             <button
-              key={s.sizeCm}
+              key={s.warehouseItemId}
               type="button"
               disabled={!s.inStock}
-              onClick={() => onSelect(s.sizeCm)}
+              onClick={() => onSelect(s)}
               aria-pressed={isSelected}
               className={`h-11 border text-sm transition-colors
                 ${

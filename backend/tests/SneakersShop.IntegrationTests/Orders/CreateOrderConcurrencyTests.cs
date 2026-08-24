@@ -37,7 +37,7 @@ public class CreateOrderConcurrencyTests : IClassFixture<CustomWebApplicationFac
         var product = Product.Create(brand.Id, category.Id, Gender.Men, "Model X", "desc", 100m);
         var variant = ProductVariant.Create(
             product.Id, "Black", [new ProductImage("https://test.com/x.jpg")]);
-        var warehouseItem = WarehouseItem.Create(variant.Id, new Size(23m), 1).Value; // последняя пара
+        var warehouseItem = WarehouseItem.Create(variant.Id, new Size(23m), 1).Value;
 
         context.Brands.Add(brand);
         context.Categories.Add(category);
