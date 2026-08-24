@@ -43,6 +43,7 @@ public static class InfrastructureServiceExtensions
         services.AddScoped<IWarehouseItemRepository, WarehouseItemRepository>();
         services.AddScoped<ICartRepository, CartRepository>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
+        services.AddScoped<IOrderRepository, OrderRepository>();
 
         // JWT settings — bound once into a typed object, single source of truth
         var jwtSettings = configuration.GetSection("JwtSettings").Get<JwtSettings>()

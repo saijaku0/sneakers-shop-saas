@@ -26,17 +26,14 @@ public sealed class Order : AggregateRoot
         Guid userId,
         Address shippingAddress,
         PaymentMethod paymentMethod,
-        DateTimeOffset paymentDeadline,
-        List<OrderItem> items) : base(Guid.CreateVersion7())
+        DateTimeOffset paymentDeadline) : base(Guid.CreateVersion7())
     {
         UserId = userId;
         ShippingAddress = shippingAddress;
         PaymentMethod = paymentMethod;
         PaymentDeadline = paymentDeadline;
         Status = OrderStatus.Pending;
-        _orderItems = [.. items];
 
-        TotalAmount = _orderItems.Sum(i => i.TotalPrice);
         EnsureInvariant();
     }
 
@@ -44,19 +41,35 @@ public sealed class Order : AggregateRoot
         Guid userId,
         Address shippingAddress,
         PaymentMethod paymentMethod,
-        List<OrderItem> items,
         DateTimeOffset now)
     {
         Guard.Against.Empty(userId);
         Guard.Against.Null(shippingAddress);
-        Guard.Against.NullOrEmpty(items);
+
 
         if (!Enum.IsDefined(paymentMethod))
             throw new DomainException($"Invalid payment method: {paymentMethod}");
         // Example: Payment deadline is set to 30 minutes from now. In a real application, this could be configurable.
         var paymentDeadline = now.AddMinutes(30);
 
-        return new Order(userId, shippingAddress, paymentMethod, paymentDeadline, items);
+        return new Order(userId, shippingAddress, paymentMethod, paymentDeadline);
+    }
+
+    public Result AddItem(Guid warehouseItemId, int quantity, decimal unitPrice, decimal discountAmount = 0m)
+    {
+        if (Status != OrderStatus.Pending)
+            return Result.Failure(OrderError.CannotModify(Status));
+
+        var existingItem = _orderItems.FirstOrDefault(i => i.WarehouseItemId == warehouseItemId);
+        if (existingItem is not null)
+            return Result.Failure(OrderError.DuplicateItem);
+
+        var item = OrderItem.Create(warehouseItemId, quantity, unitPrice, discountAmount);
+        _orderItems.Add(item);
+        TotalAmount = _orderItems.Sum(i => i.TotalPrice);
+        Touch();
+
+        return Result.Success();
     }
 
     public Result Pay(DateTimeOffset now)

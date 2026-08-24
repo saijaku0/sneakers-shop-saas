@@ -12,19 +12,22 @@ public class OrderTests
 {
     private static readonly decimal DiscountRate = 0.1m;
 
-    private static OrderItem CreateOrderItem(int quantity = 1, decimal unitPrice = 100m)
-        => OrderItem.Create(Guid.CreateVersion7(), quantity, unitPrice, unitPrice * quantity * DiscountRate);
-
     private static Address CreateAddress()
         => new("Germany", null, "Hof", "Main St", "1", "95028");
 
-    private static Order CreateOrder(DateTimeOffset now, params OrderItem[] items)
-        => Order.Create(Guid.CreateVersion7(), CreateAddress(), PaymentMethod.CreditCard,
-                        items.Length == 0 ? [CreateOrderItem()] : [.. items], now);
+    private static Order NewOrder(DateTimeOffset now)
+        => Order.Create(Guid.CreateVersion7(), CreateAddress(), PaymentMethod.CreditCard, now);
+
+    private static Order OrderWithItem(DateTimeOffset now, int quantity = 1, decimal unitPrice = 100m)
+    {
+        var order = NewOrder(now);
+        order.AddItem(Guid.CreateVersion7(), quantity, unitPrice, unitPrice * quantity * DiscountRate);
+        return order;
+    }
 
     private static Order OrderInStatus(OrderStatus status, DateTimeOffset now)
     {
-        var order = CreateOrder(now, CreateOrderItem());
+        var order = OrderWithItem(now);
 
         switch (status)
         {
@@ -51,51 +54,26 @@ public class OrderTests
     }
 
     [Fact]
-    public void Create_WithValidData_ReturnsPendingOrder()
+    public void Create_WithValidData_ReturnsPendingEmptyOrder()
     {
         var now = DateTimeOffset.UtcNow;
-        var item = CreateOrderItem(quantity: 2, unitPrice: 100m);
 
-        var order = CreateOrder(now, item);
+        var order = NewOrder(now);
 
         order.Status.Should().Be(OrderStatus.Pending);
         order.PaymentDeadline.Should().Be(now.AddMinutes(30));
         order.PaymentMethod.Should().Be(PaymentMethod.CreditCard);
         order.ShippingAddress.Should().NotBeNull();
-        order.OrderItems.Should().ContainSingle();
+        order.OrderItems.Should().BeEmpty();
+        order.TotalAmount.Should().Be(0m);
         order.Id.Should().NotBe(Guid.Empty);
-    }
-
-    [Fact]
-    public void Create_SumsItemTotalsIncludingDiscount()
-    {
-        var now = DateTimeOffset.UtcNow;
-        // 2 * 100 = 200, discount 10% = 20, result 180
-        var item = CreateOrderItem(quantity: 2, unitPrice: 100m);
-
-        var order = CreateOrder(now, item);
-
-        order.TotalAmount.Should().Be(180m);
-    }
-
-    [Fact]
-    public void Create_WithMultipleItems_SumsAll()
-    {
-        var now = DateTimeOffset.UtcNow;
-        var a = CreateOrderItem(quantity: 1, unitPrice: 100m); // 90
-        var b = CreateOrderItem(quantity: 2, unitPrice: 50m);  // 90
-
-        var order = CreateOrder(now, a, b);
-
-        order.TotalAmount.Should().Be(180m);
     }
 
     [Fact]
     public void Create_WithEmptyUserId_Throws()
     {
         var now = DateTimeOffset.UtcNow;
-        var act = () => Order.Create(Guid.Empty, CreateAddress(), PaymentMethod.CreditCard,
-                                     [CreateOrderItem()], now);
+        var act = () => Order.Create(Guid.Empty, CreateAddress(), PaymentMethod.CreditCard, now);
 
         act.Should().Throw<ArgumentException>();
     }
@@ -104,18 +82,7 @@ public class OrderTests
     public void Create_WithNullAddress_Throws()
     {
         var now = DateTimeOffset.UtcNow;
-        var act = () => Order.Create(Guid.CreateVersion7(), null!, PaymentMethod.CreditCard,
-                                     [CreateOrderItem()], now);
-
-        act.Should().Throw<ArgumentException>();
-    }
-
-    [Fact]
-    public void Create_WithNoItems_Throws()
-    {
-        var now = DateTimeOffset.UtcNow;
-        var act = () => Order.Create(Guid.CreateVersion7(), CreateAddress(), PaymentMethod.CreditCard,
-                                     [], now);
+        var act = () => Order.Create(Guid.CreateVersion7(), null!, PaymentMethod.CreditCard, now);
 
         act.Should().Throw<ArgumentException>();
     }
@@ -124,17 +91,68 @@ public class OrderTests
     public void Create_WithUndefinedPaymentMethod_Throws()
     {
         var now = DateTimeOffset.UtcNow;
-        var act = () => Order.Create(Guid.CreateVersion7(), CreateAddress(),
-                                     (PaymentMethod)999, [CreateOrderItem()], now);
+        var act = () => Order.Create(Guid.CreateVersion7(), CreateAddress(), (PaymentMethod)999, now);
 
         act.Should().Throw<DomainException>();
+    }
+
+    [Fact]
+    public void AddItem_UpdatesTotalAmount()
+    {
+        var now = DateTimeOffset.UtcNow;
+        var order = NewOrder(now);
+
+        var result = order.AddItem(Guid.CreateVersion7(), 2, 100m, 20m);
+
+        result.IsSuccess.Should().BeTrue();
+        order.OrderItems.Should().ContainSingle();
+        order.TotalAmount.Should().Be(180m);
+    }
+
+    [Fact]
+    public void AddItem_MultipleItems_SumsTotalAmount()
+    {
+        var now = DateTimeOffset.UtcNow;
+        var order = NewOrder(now);
+
+        order.AddItem(Guid.CreateVersion7(), 1, 100m, 10m);
+        order.AddItem(Guid.CreateVersion7(), 2, 50m, 10m);
+
+        order.OrderItems.Should().HaveCount(2);
+        order.TotalAmount.Should().Be(180m);
+    }
+
+    [Fact]
+    public void AddItem_DuplicateWarehouseItem_Fails()
+    {
+        var now = DateTimeOffset.UtcNow;
+        var order = NewOrder(now);
+        var warehouseItemId = Guid.CreateVersion7();
+
+        order.AddItem(warehouseItemId, 1, 100m, 0m);
+        var result = order.AddItem(warehouseItemId, 1, 100m, 0m);
+
+        result.IsFailure.Should().BeTrue();
+        order.OrderItems.Should().ContainSingle();
+    }
+
+    [Fact]
+    public void AddItem_WhenNotPending_Fails()
+    {
+        var now = DateTimeOffset.UtcNow;
+        var order = OrderWithItem(now);
+        order.Pay(now);
+
+        var result = order.AddItem(Guid.CreateVersion7(), 1, 100m, 0m);
+
+        result.IsFailure.Should().BeTrue();
     }
 
     [Fact]
     public void Pay_FromPending_BeforeDeadline_SucceedsAndRaisesEvent()
     {
         var now = DateTimeOffset.UtcNow;
-        var order = CreateOrder(now, CreateOrderItem());
+        var order = OrderWithItem(now);
 
         var result = order.Pay(now.AddMinutes(5));
 
@@ -147,7 +165,7 @@ public class OrderTests
     public void Pay_AfterDeadline_Fails()
     {
         var now = DateTimeOffset.UtcNow;
-        var order = CreateOrder(now, CreateOrderItem());
+        var order = OrderWithItem(now);
 
         var result = order.Pay(now.AddMinutes(31));
 
@@ -159,7 +177,7 @@ public class OrderTests
     public void Pay_Twice_IsIdempotent()
     {
         var now = DateTimeOffset.UtcNow;
-        var order = CreateOrder(now, CreateOrderItem());
+        var order = OrderWithItem(now);
         order.Pay(now);
         order.ClearDomainEvents();
 
@@ -173,7 +191,7 @@ public class OrderTests
     public void Pay_FromCancelled_Fails()
     {
         var now = DateTimeOffset.UtcNow;
-        var order = CreateOrder(now, CreateOrderItem());
+        var order = OrderWithItem(now);
         order.Cancel(now);
 
         var result = order.Pay(now);
@@ -186,7 +204,7 @@ public class OrderTests
     public void Cancel_FromPending_SucceedsAndRaisesEvent()
     {
         var now = DateTimeOffset.UtcNow;
-        var order = CreateOrder(now, CreateOrderItem());
+        var order = OrderWithItem(now);
 
         var result = order.Cancel(now);
 
@@ -199,7 +217,7 @@ public class OrderTests
     public void Cancel_Twice_IsIdempotent()
     {
         var now = DateTimeOffset.UtcNow;
-        var order = CreateOrder(now, CreateOrderItem());
+        var order = OrderWithItem(now);
         order.Cancel(now);
         order.ClearDomainEvents();
 
@@ -227,7 +245,7 @@ public class OrderTests
     public void Fulfilment_HappyPath_ReachesDelivered()
     {
         var now = DateTimeOffset.UtcNow;
-        var order = CreateOrder(now, CreateOrderItem());
+        var order = OrderWithItem(now);
         order.Pay(now);
 
         order.StartPackaging();
@@ -244,7 +262,7 @@ public class OrderTests
     public void StartPackaging_FromPending_Throws()
     {
         var now = DateTimeOffset.UtcNow;
-        var order = CreateOrder(now, CreateOrderItem());
+        var order = OrderWithItem(now);
 
         var act = order.StartPackaging;
 
@@ -266,7 +284,7 @@ public class OrderTests
     public void Deliver_FromPending_Throws()
     {
         var now = DateTimeOffset.UtcNow;
-        var order = CreateOrder(now, CreateOrderItem());
+        var order = OrderWithItem(now);
 
         var act = order.Deliver;
 
