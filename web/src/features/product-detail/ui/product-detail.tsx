@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Star } from "lucide-react";
-import type { ProductDetail as ProductDetailType } from "@/entities/product";
+import type { ProductDetail as ProductDetailType, ProductSize } from "@/entities/product";
 import { ProductGallery } from "./product-gallery";
 import { ColorSwatches } from "./color-swatches";
 import { SizePicker } from "./size-picker";
@@ -22,7 +22,7 @@ export function ProductDetail({ product }: { product: ProductDetailType }) {
     product.variants[0]?.variantId;
 
   const [variantId, setVariantId] = useState(initialVariant);
-  const [sizeCm, setSizeCm] = useState<number | null>(null);
+  const [selectedSize, setSelectedSize] = useState<ProductSize | null>(null);
 
   const variant =
     product.variants.find((v) => v.variantId === variantId) ??
@@ -34,11 +34,11 @@ export function ProductDetail({ product }: { product: ProductDetailType }) {
 
   const handleColorChange = (id: string) => {
     setVariantId(id);
-    setSizeCm(null);
+    setSelectedSize(null);
   };
 
   return (
-    <div className="mx-auto px-4 pt-20 py-6">
+    <div className="mx-auto px-4 py-6">
       <nav className="mb-6 flex items-center gap-2 text-sm text-muted-foreground">
         <Link href="/" className="hover:text-foreground hover:underline">
           Home
@@ -57,18 +57,15 @@ export function ProductDetail({ product }: { product: ProductDetailType }) {
       </nav>
 
       <div className="grid gap-8 lg:grid-cols-[1fr_400px]">
-        {/* галерея слева */}
         <ProductGallery
           key={variant.variantId}
           images={variant.images}
           alt={product.model}
         />
 
-        {/* инфо справа — sticky */}
         <div className="lg:sticky lg:top-24 lg:h-fit">
           <p className="text-sm text-muted-foreground">{product.brandName}</p>
 
-          {/* мок-рейтинг */}
           <div className="mt-2 flex items-center gap-1.5 text-sm">
             <span className="font-medium text-foreground">4.8</span>
             <div className="flex">
@@ -101,8 +98,8 @@ export function ProductDetail({ product }: { product: ProductDetailType }) {
           <div className="mt-6">
             <SizePicker
               sizes={variant.sizes}
-              selected={sizeCm}
-              onSelect={setSizeCm}
+              selected={selectedSize}
+              onSelect={setSelectedSize}
             />
           </div>
 
@@ -112,7 +109,7 @@ export function ProductDetail({ product }: { product: ProductDetailType }) {
           </p>
 
           <div className="mt-6">
-            <AddToCartButton variant={variant} sizeCm={sizeCm} />
+            <AddToCartButton variant={variant} selectedSize={selectedSize} />
           </div>
 
           {product.description && (
