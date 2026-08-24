@@ -1,31 +1,34 @@
 "use client";
 
 import { Button } from "@/shared/ui";
-import type { ProductDetailVariant } from "@/entities/product";
+import type { ProductDetailVariant, ProductSize } from "@/entities/product";
 
 export function AddToCartButton({
   variant,
-  sizeCm,
+  selectedSize,
 }: {
   variant: ProductDetailVariant;
-  sizeCm: number | null;
+  selectedSize: ProductSize | null;
 }) {
   const handleAdd = () => {
-    if (sizeCm === null) return;
-    // TODO: server-side cart. Once POST /cart/items is available —
-    // send { variantId: variant.variantId, sizeCm, quantity: 1 },
-    // the backend will return a CartItem with warehouseItemId and maxAvailable.
-    console.log("add to cart:", variant.variantId, sizeCm);
+    if (!selectedSize) return;
+
+    console.log("add to cart payload:", {
+      variantId: variant.variantId,
+      warehouseItemId: selectedSize.warehouseItemId,
+      sizeCm: selectedSize.sizeCm,
+      quantity: 1
+    });
   };
 
   return (
     <Button
       size="lg"
       className="w-full"
-      disabled={sizeCm === null}
+      disabled={!selectedSize}
       onClick={handleAdd}
     >
-      {sizeCm === null ? "Select a size" : "Add to cart"}
+      {!selectedSize ? "Select a size" : "Add to cart"}
     </Button>
   );
 }
