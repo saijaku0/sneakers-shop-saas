@@ -45,7 +45,7 @@ internal sealed class CreateOrderCommandHandler(
         }
 
         if (address is null)
-            return Result<Guid>.Failure(OrderError.ShippingAddressRequired);
+            return Result<Guid>.Failure(OrderErrors.ShippingAddressRequired);
 
         var warehouseItemIds = cart.Items.Select(i => i.WarehouseItemId).ToList();
         var prices = await context.WarehouseItems
