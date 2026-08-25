@@ -19,6 +19,12 @@ public static class ApplicationServiceExtensions
         services.AddScoped(typeof(IPipelineBehavior<,>), typeof(ConcurrencyRetryBehavior<,>));
 
         services.AddValidatorsFromAssembly(typeof(ApplicationAssemblyMarker).Assembly);
+        services.AddMediatR(cfg =>
+        {
+            cfg.RegisterServicesFromAssembly(typeof(ApplicationAssemblyMarker).Assembly);
+            cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
+            cfg.AddOpenBehavior(typeof(ConcurrencyRetryBehavior<,>));
+        });
 
         return services;
     }
