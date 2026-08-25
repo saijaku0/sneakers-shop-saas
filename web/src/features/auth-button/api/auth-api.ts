@@ -1,6 +1,7 @@
 import { api } from "@/shared/api";
 import { LoginRequest } from "../lib/types";
 import { setToken, Tokens } from "@/entities/session";
+import { startCartSync } from "@/entities/cart";
 
 export const authApi = api.injectEndpoints({
   endpoints: (builder) => ({
@@ -13,6 +14,7 @@ export const authApi = api.injectEndpoints({
       async onQueryStarted(_, { dispatch, queryFulfilled }) {
         const { data } = await queryFulfilled;
         dispatch(setToken(data));
+        dispatch(startCartSync());
       },
       invalidatesTags: ["Viewer"],
     }),

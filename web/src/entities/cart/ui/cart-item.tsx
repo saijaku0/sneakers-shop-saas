@@ -1,7 +1,7 @@
 import { AlertCircle, Minus, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/shared/ui";
 import { cn } from "@/shared/lib/utils";
-import type { CartItem as CartItemType } from "../model/types";
+import type { CartItem as CartItemType } from "../lib/types";
 
 interface CartItemProps {
   item: CartItemType;
@@ -12,27 +12,30 @@ interface CartItemProps {
 export function CartItem({ item, onQuantityChange, onRemove }: CartItemProps) {
   return (
     <div
-      className={cn("flex items-start gap-4", !item.inStock && "opacity-60")}
+      className={cn(
+        "flex items-start gap-4",
+        !item.isAvailable && "opacity-60",
+      )}
     >
       <div className="h-20 w-20 shrink-0 overflow-hidden rounded-md border bg-muted">
         <img
-          src={item.image.url}
-          alt={item.image.alt}
+          src={item.previewImageUrl}
+          alt={`${item.brandName} ${item.model}`}
           className="h-full w-full object-cover object-center"
         />
       </div>
 
       <div className="flex flex-1 flex-col">
         <span className="text-xs uppercase tracking-wider text-muted-foreground">
-          {item.brand}
+          {item.brandName}
         </span>
-        <span className="line-clamp-1 text-sm font-semibold">{item.name}</span>
+        <span className="line-clamp-1 text-sm font-semibold">{item.model}</span>
         <span className="mt-0.5 text-xs text-muted-foreground">
-          Size: {item.size} | Color: {item.color}
+          Size: {item.sizeCm} | Color: {item.color}
         </span>
 
         <div className="mt-2 flex items-center justify-between">
-          {item.inStock ? (
+          {item.isAvailable ? (
             <span className="text-sm font-medium">
               ${item.unitPrice.toFixed(2)}
             </span>
@@ -50,7 +53,7 @@ export function CartItem({ item, onQuantityChange, onRemove }: CartItemProps) {
               size="icon"
               className="h-7 w-7 rounded-none"
               onClick={() => onQuantityChange(item.warehouseItemId, -1)}
-              disabled={!item.inStock || item.quantity <= 1}
+              disabled={!item.isAvailable || item.quantity <= 1}
             >
               <Minus className="h-3 w-3" />
             </Button>
@@ -62,7 +65,11 @@ export function CartItem({ item, onQuantityChange, onRemove }: CartItemProps) {
               size="icon"
               className="h-7 w-7 rounded-none"
               onClick={() => onQuantityChange(item.warehouseItemId, 1)}
-              disabled={!item.inStock || item.quantity >= item.maxAvailable}
+              disabled={
+                !item.isAvailable ||
+                (item.available !== undefined &&
+                  item.quantity >= item.available)
+              }
             >
               <Plus className="h-3 w-3" />
             </Button>

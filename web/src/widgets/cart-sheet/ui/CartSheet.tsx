@@ -1,5 +1,7 @@
 "use client";
 
+import { useSelector, useDispatch } from "react-redux";
+
 import {
   Sheet,
   SheetClose,
@@ -10,6 +12,7 @@ import {
   SheetTitle,
   SheetTrigger,
   Button,
+  Skeleton,
 } from "@/shared/ui";
 import {
   selectItemCount,
@@ -19,16 +22,79 @@ import {
   CartButton,
   CartItemRow,
   CartSummary,
-  useCart,
+  selectCartItems,
+  selectCartSyncStatus,
+  clampCartQuantity,
+  useGetCartQuery,
+  useRemoveFromCartMutation,
+  useUpdateCartItemQuantityMutation,
+  changeQuantity,
+  setCartItemQuantity,
+  removeFromCart as removeFromLocalCart,
 } from "@/entities/cart";
+import { selectToken } from "@/entities/session";
+import Link from "next/link";
 
 export function CartSheet() {
-  const { items, changeQuantity, removeItem } = useCart();
+  const items = useSelector(selectCartItems);
+  const token = useSelector(selectToken);
+  const syncStatus = useSelector(selectCartSyncStatus);
+  const isAuthenticated = Boolean(token);
+  const dispatch = useDispatch();
+
+  const [removeFromServerCart] = useRemoveFromCartMutation();
+  const [updateQuantity] = useUpdateCartItemQuantityMutation();
+
+  const { isLoading } = useGetCartQuery(undefined, {
+    skip: !isAuthenticated || syncStatus === "syncing",
+  });
 
   const itemCount = selectItemCount(items);
   const subtotal = selectSubtotal(items);
   const canCheckout = selectCanCheckout(items);
   const hasOutOfStock = selectHasOutOfStock(items);
+
+  const handleQuantityChange = async (id: string, delta: number) => {
+    if (!isAuthenticated) {
+      dispatch(changeQuantity({ id, delta }));
+      return;
+    }
+
+    const item = items.find((i) => i.warehouseItemId === id);
+    if (!item || !item.isAvailable) return;
+
+    const previousQuantity = item.quantity;
+    const nextQuantity = clampCartQuantity(
+      previousQuantity + delta,
+      item.available,
+    );
+    if (nextQuantity === previousQuantity) return;
+
+    dispatch(setCartItemQuantity({ id, quantity: nextQuantity }));
+
+    try {
+      await updateQuantity({
+        warehouseItemId: id,
+        quantity: nextQuantity,
+      }).unwrap();
+    } catch (err) {
+      dispatch(setCartItemQuantity({ id, quantity: previousQuantity }));
+      console.error("Failed to update cart item quantity:", err);
+    }
+  };
+
+  const handleRemove = async (warehouseItemId: string) => {
+    if (!isAuthenticated) {
+      dispatch(removeFromLocalCart(warehouseItemId));
+      return;
+    }
+
+    try {
+      await removeFromServerCart(warehouseItemId).unwrap();
+    } catch (err) {
+      console.error("Failed to remove item from cart:", err);
+    }
+  };
 
   return (
     <Sheet>
@@ -45,14 +111,20 @@ export function CartSheet() {
         </SheetHeader>
 
         <div className="flex-1 overflow-y-auto px-4 py-4">
-          {items.length > 0 ? (
+          {isLoading ? (
+            <div className="flex flex-col gap-6">
+              {Array.from({ length: 3 }).map((_, index) => (
+                <CartItemSkeleton key={index} />
+              ))}
+            </div>
+          ) : items.length > 0 ? (
             <div className="flex flex-col gap-6">
               {items.map((item) => (
                 <CartItemRow
                   key={item.warehouseItemId}
                   item={item}
-                  onQuantityChange={changeQuantity}
-                  onRemove={removeItem}
+                  onQuantityChange={handleQuantityChange}
+                  onRemove={handleRemove}
                 />
               ))}
             </div>
@@ -71,14 +143,22 @@ export function CartSheet() {
           />
 
           <SheetFooter className="flex-col gap-2 sm:flex-col">
-            <Button className="w-full" size="lg" disabled={!canCheckout}>
-              Checkout
-            </Button>
-            {hasOutOfStock && (
+            <Link href="/checkout">
+              <Button
+                className="w-full"
+                size="lg"
+                disabled={isLoading || !canCheckout}
+              >
+                Checkout
+              </Button>
+            </Link>
+
+            {!isLoading && hasOutOfStock && (
               <p className="text-center text-[10px] text-destructive">
                 Remove out of stock items to checkout
               </p>
             )}
+
             <SheetClose asChild>
               <Button variant="outline" className="w-full">
                 Continue shopping
@@ -88,5 +168,24 @@ export function CartSheet() {
         </div>
       </SheetContent>
     </Sheet>
+  );
+}
+
+function CartItemSkeleton() {
+  return (
+    <div className="flex gap-4">
+      <Skeleton className="h-24 w-24 shrink-0 rounded-md" />
+
+      <div className="flex min-w-0 flex-1 flex-col gap-2">
+        <Skeleton className="h-4 w-3/4" />
+        <Skeleton className="h-3 w-1/2" />
+        <Skeleton className="h-3 w-1/3" />
+
+        <div className="mt-auto flex items-center justify-between">
+          <Skeleton className="h-8 w-24" />
+          <Skeleton className="h-5 w-16" />
+        </div>
+      </div>
+    </div>
   );
 }

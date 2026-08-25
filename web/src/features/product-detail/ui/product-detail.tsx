@@ -4,7 +4,10 @@ import { useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Star } from "lucide-react";
-import type { ProductDetail as ProductDetailType, ProductSize } from "@/entities/product";
+import type {
+  ProductDetail as ProductDetailType,
+  ProductSize,
+} from "@/entities/product";
 import { ProductGallery } from "./product-gallery";
 import { ColorSwatches } from "./color-swatches";
 import { SizePicker } from "./size-picker";
@@ -109,7 +112,11 @@ export function ProductDetail({ product }: { product: ProductDetailType }) {
           </p>
 
           <div className="mt-6">
-            <AddToCartButton variant={variant} selectedSize={selectedSize} />
+            <AddToCartButton
+              product={product}
+              variant={variant}
+              selectedSize={selectedSize}
+            />
           </div>
 
           {product.description && (
