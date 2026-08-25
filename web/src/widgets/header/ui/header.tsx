@@ -30,7 +30,7 @@ export function Header() {
       className={`sticky top-0 w-full z-40 transition-all duration-300 py-4 ${
         isScrolled
           ? "bg-background border-b border-border shadow-sm"
-          : "border-b border-transparent bg-background/20 backdrop-blur-md "
+          : "border-b border-transparent bg-background"
       }`}
     >
       <Container className="flex justify-between items-center">
