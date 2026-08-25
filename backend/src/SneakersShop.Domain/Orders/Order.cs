@@ -58,11 +58,11 @@ public sealed class Order : AggregateRoot
     public Result AddItem(Guid warehouseItemId, int quantity, decimal unitPrice, decimal discountAmount = 0m)
     {
         if (Status != OrderStatus.Pending)
-            return Result.Failure(OrderError.CannotModify(Status));
+            return Result.Failure(OrderErrors.CannotModify(Status));
 
         var existingItem = _orderItems.FirstOrDefault(i => i.WarehouseItemId == warehouseItemId);
         if (existingItem is not null)
-            return Result.Failure(OrderError.DuplicateItem);
+            return Result.Failure(OrderErrors.DuplicateItem);
 
         var item = OrderItem.Create(warehouseItemId, quantity, unitPrice, discountAmount);
         _orderItems.Add(item);
@@ -78,10 +78,10 @@ public sealed class Order : AggregateRoot
             return Result.Success();
 
         if (Status != OrderStatus.Pending)
-            return OrderError.InvalidStateTransition(Status, OrderStatus.Paid);
+            return OrderErrors.InvalidStateTransition(Status, OrderStatus.Paid);
 
         if (now > PaymentDeadline)
-            return OrderError.PaymentDeadlineExpired(PaymentDeadline);
+            return OrderErrors.PaymentDeadlineExpired(PaymentDeadline);
 
         Status = OrderStatus.Paid;
         Touch();
@@ -96,7 +96,7 @@ public sealed class Order : AggregateRoot
             return Result.Success();
 
         if (Status is OrderStatus.Shipping or OrderStatus.Delivered)
-            return OrderError.InvalidStateTransition(Status, OrderStatus.Cancelled);
+            return OrderErrors.InvalidStateTransition(Status, OrderStatus.Cancelled);
 
         Status = OrderStatus.Cancelled;
         Touch();
