@@ -1,7 +1,7 @@
 "use client";
 
 import { useDispatch, useSelector } from "react-redux";
-import { Button, StepProgress } from "@/shared/ui";
+import { Button, HomeButton, StepProgress } from "@/shared/ui";
 import { AccountStep } from "./account-step";
 import { AddressStep } from "./address-step";
 import { CardStep } from "./card-step";
@@ -23,19 +23,7 @@ export function RegistrationWizard() {
 
   return (
     <div className="mx-auto w-full max-w-lg bg-background px-8 py-10">
-      <div className="mb-8">
-        <Button
-          variant="ghost"
-          size="sm"
-          className="text-muted-foreground hover:text-foreground"
-          asChild
-        >
-          <Link href="/">
-            <Home className="mr-2 h-4 w-4" />
-            Home
-          </Link>
-        </Button>
-      </div>
+      <HomeButton />
       <StepProgress currentStep={step} />
 
       <h2 className="mt-10 mb-8 font-display text-3xl font-bold uppercase tracking-tight text-foreground">
