@@ -9,6 +9,8 @@ export { Badge, badgeVariants } from "./badge";
 export { CatalogBreadcrumbs } from "./catalog-breadcrumbs";
 export { Slider } from "./slider";
 export { Checkbox } from "./cheakbox";
+export { Skeleton } from "./skeleton";
+export { HomeButton } from "./home-button";
 
 export {
   Menubar,
