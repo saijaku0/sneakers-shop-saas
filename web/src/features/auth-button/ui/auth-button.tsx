@@ -22,6 +22,7 @@ import { cn } from "@/shared/lib";
 import { User } from "lucide-react";
 import { LoginForm } from "./login-form";
 import { useState } from "react";
+import { clearCart } from "@/entities/cart";
 
 export function AuthButton({
   orientation = "row",
@@ -53,7 +54,10 @@ export function AuthButton({
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem
-            onClick={() => dispatch(clearToken())}
+            onClick={() => {
+              dispatch(clearToken());
+              dispatch(clearCart());
+            }}
             className="text-destructive focus:text-destructive"
           >
             Sign out
