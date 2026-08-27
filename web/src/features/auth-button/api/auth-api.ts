@@ -1,6 +1,6 @@
-import { api } from "@/shared/api";
+import { api, Tokens } from "@/shared/api";
 import { LoginRequest } from "../lib/types";
-import { setToken, Tokens } from "@/entities/session";
+import { setToken } from "@/entities/session";
 import { startCartSync } from "@/entities/cart";
 
 export const authApi = api.injectEndpoints({
@@ -18,8 +18,15 @@ export const authApi = api.injectEndpoints({
       },
       invalidatesTags: ["Viewer"],
     }),
+    logout: builder.mutation<void, { refreshToken: string }>({
+      query: (body) => ({
+        url: "/auth/logout",
+        method: "POST",
+        body,
+      }),
+    }),
   }),
   overrideExisting: false,
 });
 
-export const { useLoginMutation } = authApi;
+export const { useLoginMutation, useLogoutMutation } = authApi;
