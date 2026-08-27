@@ -68,11 +68,8 @@ export function ProductCard({ product }: ProductCardProps) {
             </span>
           </div>
           <h3 className="font-normal text-foreground leading-tight">
-            {product.model}
+            {product.brandName} {product.model}
           </h3>
-          <span className="text-sm text-foreground/60 mt-0.5">
-            {product.brand}
-          </span>
         </Link>
       </div>
 
@@ -84,7 +81,7 @@ export function ProductCard({ product }: ProductCardProps) {
             <span className="text-sm mt-0.5">.</span>
           </div>
           <h3 className="font-normal leading-tight">{product.model}</h3>
-          <span className="text-sm mt-0.5">{product.brand}</span>
+          <span className="text-sm mt-0.5">{product.brandName}</span>
         </div>
       </div>
     </article>
