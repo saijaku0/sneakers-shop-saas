@@ -37,7 +37,10 @@ internal sealed class AuthenticationService(
 
             var createUserResult = await userManager.CreateAsync(userApplication, req.Password);
             if (!createUserResult.Succeeded)
-                return Result<Guid>.Failure(AuthError.RegistrationFailed);
+            {
+                var identityError = createUserResult.Errors.First();
+                return Result<Guid>.Failure(AuthError.FromIdentity(identityError));
+            }
 
             var userDomain = UserProfile.Create(
                 userApplication.Id,
