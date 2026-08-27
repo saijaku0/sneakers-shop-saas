@@ -37,7 +37,7 @@ export function CartItem({ item, onQuantityChange, onRemove }: CartItemProps) {
         <div className="mt-2 flex items-center justify-between">
           {item.isAvailable ? (
             <span className="text-sm font-medium">
-              ${item.unitPrice.toFixed(2)}
+              €{item.unitPrice.toFixed(2)}
             </span>
           ) : (
             <span className="flex items-center text-xs font-medium text-destructive">
