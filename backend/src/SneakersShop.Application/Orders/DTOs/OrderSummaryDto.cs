@@ -5,4 +5,6 @@ public sealed record OrderSummaryDto(
     string Status,
     decimal TotalAmount,
     DateTimeOffset CreatedAt,
-    int ItemCount);
+    int ItemCount,
+    IReadOnlyList<string> PreviewImages,
+    string ItemsPreviewText);
