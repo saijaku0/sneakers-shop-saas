@@ -1,13 +1,17 @@
 import { capitalize } from "@/shared/lib";
-
 import type { ParsedCatalogSlug } from "../model/types";
 
 const VALID_GENDERS = ["men", "women", "kids", "unisex"];
 
-const VALID_CATEGORIES = ["sneakers", "running", "boots", "sandals", "shoes"];
-
-export function parseCatalogSlug(slug: string): ParsedCatalogSlug {
+export function parseCatalogSlug(
+  slug: string,
+  categories: Array<{ name: string }>,
+): ParsedCatalogSlug {
   const parts = slug.toLowerCase().split("-").filter(Boolean);
+
+  const validCategories = categories.map((category) =>
+    category.name.toLowerCase(),
+  );
 
   if (parts.length === 1) {
     const [part] = parts;
@@ -19,7 +23,7 @@ export function parseCatalogSlug(slug: string): ParsedCatalogSlug {
       };
     }
 
-    if (VALID_CATEGORIES.includes(part)) {
+    if (validCategories.includes(part)) {
       return {
         category: part,
         isValid: true,
@@ -30,7 +34,7 @@ export function parseCatalogSlug(slug: string): ParsedCatalogSlug {
   if (parts.length === 2) {
     const [gender, category] = parts;
 
-    if (VALID_GENDERS.includes(gender) && VALID_CATEGORIES.includes(category)) {
+    if (VALID_GENDERS.includes(gender) && validCategories.includes(category)) {
       return {
         gender: capitalize(gender),
         category,
