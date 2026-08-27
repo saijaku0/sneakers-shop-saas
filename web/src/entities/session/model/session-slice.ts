@@ -6,12 +6,6 @@ interface SessionSliceState extends SessionState {
   isHydrated: boolean;
 }
 
-// BUG-005: initial state must be identical on the server and on the client's
-// first render. Reading localStorage here (synchronously, at module scope)
-// made the client's first render disagree with the server-rendered HTML,
-// causing a hydration mismatch. Tokens are now loaded only after mount, via
-// hydrateSession() (see SessionHydrator), so both environments start from
-// the same deterministic "not hydrated yet" state.
 const initialState: SessionSliceState = {
   session: {
     accessToken: null,
