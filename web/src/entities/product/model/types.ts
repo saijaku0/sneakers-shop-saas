@@ -1,7 +1,7 @@
 export interface ProductListItem {
   productId: string;
   model: string;
-  brand: string;
+  brandName: string;
   basePrice: number;
   variantsCount: number;
   variants: ProductVariantPreview[];
