@@ -16,8 +16,8 @@ public sealed class RegisterNewUserHandler(
         CancellationToken cancellationToken)
     {
         var createUser = await authService.CreateUserAsync(request, cancellationToken).ConfigureAwait(false);
-        if (createUser == null)
-            return Result<AuthResponse>.Failure(new Error("Auth.InvalidCredentials", "User creation failed.", ErrorType.Invalid));
+        if (!createUser.IsSuccess)
+            return Result<AuthResponse>.Failure(createUser.Error);
 
         return await authService.LoginAsync(request.Email, request.Password, cancellationToken);
     }
