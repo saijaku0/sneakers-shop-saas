@@ -159,6 +159,46 @@ public class GetOrdersTests : IClassFixture<CustomWebApplicationFactory<Program>
         summary.Status.Should().Be("Paid");
         summary.TotalAmount.Should().Be(200m);
         summary.ItemCount.Should().Be(1);
+
+        summary.PreviewImages.Should().NotBeEmpty();
+        summary.PreviewImages.Should().OnlyContain(url => !string.IsNullOrEmpty(url));
+        summary.ItemsPreviewText.Should().NotBeNullOrEmpty();
+    }
+
+    [Fact]
+    public async Task GetOrders_MultipleItems_PreviewCappedAtThree_TextShowsRemainder()
+    {
+        var token = await _authHelper.GetValidAccessTokenAsync();
+
+        var w1 = await SeedWarehouseItemAsync(quantity: 5, price: 100m);
+        var w2 = await SeedWarehouseItemAsync(quantity: 5, price: 100m);
+        var w3 = await SeedWarehouseItemAsync(quantity: 5, price: 100m);
+        var w4 = await SeedWarehouseItemAsync(quantity: 5, price: 100m);
+
+        foreach (var w in new[] { w1, w2, w3, w4 })
+        {
+            var add = new HttpRequestMessage(HttpMethod.Post, "/api/v1/cart/items")
+            {
+                Content = JsonContent.Create(new { warehouseItemId = w, quantity = 1 })
+            };
+            add.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            (await _client.SendAsync(add)).StatusCode.Should().Be(HttpStatusCode.NoContent);
+        }
+
+        var create = new HttpRequestMessage(HttpMethod.Post, "/api/v1/orders")
+        {
+            Content = JsonContent.Create(new { shippingAddress = SampleAddress(), paymentMethod = 0 })
+        };
+        create.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        var orderId = await (await _client.SendAsync(create)).Content.ReadFromJsonAsync<Guid>();
+
+        var response = await _client.SendAsync(BuildGet(token));
+        var orders = await response.Content.ReadFromJsonAsync<List<OrderSummaryDto>>();
+
+        var summary = orders!.Single(o => o.Id == orderId);
+        summary.ItemCount.Should().Be(4);
+        summary.PreviewImages.Should().HaveCount(3);
+        summary.ItemsPreviewText.Should().EndWith("+2");
     }
 
     [Fact]

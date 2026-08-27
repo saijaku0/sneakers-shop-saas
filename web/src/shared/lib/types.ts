@@ -1,6 +1,6 @@
 export interface DefaultShippingAddress {
   country: string;
-  state?: string;
+  state?: string | null;
   city: string;
   street: string;
   houseNumber: string;

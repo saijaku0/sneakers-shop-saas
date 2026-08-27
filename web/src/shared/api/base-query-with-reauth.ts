@@ -35,7 +35,6 @@ const baseQuery = fetchBaseQuery({
   },
 });
 
-// TODO: Refactor
 export const baseQueryWithReauth: BaseQueryFn<
   string | FetchArgs,
   unknown,
@@ -43,42 +42,47 @@ export const baseQueryWithReauth: BaseQueryFn<
 > = async (args, api, extraOptions) => {
   await mutex.waitForUnlock();
 
-  let result = await baseQuery(args, api, extraOptions);
+  const result = await baseQuery(args, api, extraOptions);
 
-  if (result.error && result.error.status === 401) {
-    if (!mutex.isLocked()) {
-      const release = await mutex.acquire();
-
-      try {
-        const refreshToken = (api.getState() as SessionState).session
-          .refreshToken;
-
-        if (!refreshToken) {
-          api.dispatch(sessionTerminated());
-          return result;
-        }
-
-        const refreshResult = await baseQuery(
-          { url: "/auth/refresh", method: "POST", body: { refreshToken } },
-          api,
-          extraOptions,
-        );
-
-        if (refreshResult.data) {
-          const newTokens = refreshResult.data as Tokens;
-          api.dispatch(tokenRefreshed(newTokens));
-          result = await baseQuery(args, api, extraOptions);
-        } else {
-          api.dispatch(sessionTerminated());
-        }
-      } finally {
-        release();
-      }
-    } else {
-      await mutex.waitForUnlock();
-      result = await baseQuery(args, api, extraOptions);
-    }
+  if (result.error?.status !== 401) {
+    return result;
   }
 
-  return result;
+  if (mutex.isLocked()) {
+    await mutex.waitForUnlock();
+
+    return baseQuery(args, api, extraOptions);
+  }
+
+  const release = await mutex.acquire();
+
+  try {
+    const { refreshToken } = (api.getState() as SessionState).session;
+
+    if (!refreshToken) {
+      api.dispatch(sessionTerminated());
+      return result;
+    }
+
+    const refreshResult = await baseQuery(
+      {
+        url: "/auth/refresh",
+        method: "POST",
+        body: { refreshToken },
+      },
+      api,
+      extraOptions,
+    );
+
+    if (refreshResult.error || !refreshResult.data) {
+      api.dispatch(sessionTerminated());
+      return result;
+    }
+
+    api.dispatch(tokenRefreshed(refreshResult.data as Tokens));
+
+    return baseQuery(args, api, extraOptions);
+  } finally {
+    release();
+  }
 };

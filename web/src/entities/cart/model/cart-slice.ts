@@ -8,43 +8,34 @@ export const clampCartQuantity = (qty: number, max?: number) => {
 
 const CART_KEY = "local_cart";
 
-const loadCartFromStorage = () => {
-  try {
-    if (typeof window !== "undefined") {
-      const data = localStorage.getItem(CART_KEY);
-      return data ? JSON.parse(data) : [];
-    }
-    return [];
-  } catch {
-    return [];
-  }
-};
-
 const saveCartToStorage = (items: CartItem[]) => {
   if (typeof window !== "undefined") {
     localStorage.setItem(CART_KEY, JSON.stringify(items));
   }
 };
 
-const hasStoredSession = () =>
-  typeof window !== "undefined" && Boolean(localStorage.getItem("accessToken"));
-
 export type CartSyncStatus = "idle" | "syncing" | "synced";
 
 export interface CartState {
   items: CartItem[];
   syncStatus: CartSyncStatus;
+  hydrated: boolean;
 }
 
 const initialState: CartState = {
-  items: hasStoredSession() ? [] : loadCartFromStorage(),
+  items: [],
   syncStatus: "idle",
+  hydrated: false,
 };
 
 export const cartSlice = createSlice({
   name: "cart",
   initialState,
   reducers: {
+    hydrateCart: (state, action: PayloadAction<CartItem[]>) => {
+      state.items = action.payload;
+      state.hydrated = true;
+    },
     addToCart: (state, action) => {
       const existing = state.items.find(
         (item) => item.warehouseItemId === action.payload.warehouseItemId,

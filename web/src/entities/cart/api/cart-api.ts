@@ -54,6 +54,7 @@ export const cartApi = api.injectEndpoints({
     }),
     syncCart: builder.mutation<null, AddToCartRequest[]>({
       queryFn: async (items, _api, _extraOptions, baseQuery) => {
+        const addedItemIds: string[] = [];
         for (const item of items) {
           const result = await baseQuery({
             url: "/cart/items",
@@ -62,8 +63,15 @@ export const cartApi = api.injectEndpoints({
           });
 
           if (result.error) {
+            for (const id of addedItemIds) {
+              await baseQuery({
+                url: `/cart/items/${id}`,
+                method: "DELETE",
+              });
+            }
             return { error: result.error };
           }
+          addedItemIds.push(item.warehouseItemId);
         }
 
         return { data: null };

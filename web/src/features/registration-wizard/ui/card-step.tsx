@@ -14,7 +14,6 @@ import { useRouter } from "next/navigation";
 
 const EMPTY: CardData = { cardNumber: "", holder: "", expiry: "", cvv: "" };
 
-// ── маски ──
 const formatCardNumber = (v: string) =>
   v
     .replace(/\D/g, "")

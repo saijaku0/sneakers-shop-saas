@@ -30,6 +30,7 @@ import {
   useUpdateCartItemQuantityMutation,
   changeQuantity,
   setCartItemQuantity,
+  setCartFromServer,
   removeFromCart as removeFromLocalCart,
 } from "@/entities/cart";
 import { selectToken } from "@/entities/session";
@@ -89,9 +90,13 @@ export function CartSheet() {
       return;
     }
 
+    const snapshot = items;
+    dispatch(removeFromLocalCart(warehouseItemId));
+
     try {
       await removeFromServerCart(warehouseItemId).unwrap();
     } catch (err) {
+      dispatch(setCartFromServer(snapshot));
       console.error("Failed to remove item from cart:", err);
     }
   };
@@ -143,15 +148,21 @@ export function CartSheet() {
           />
 
           <SheetFooter className="flex-col gap-2 sm:flex-col">
-            <Link href="/checkout">
-              <Button
-                className="w-full"
-                size="lg"
-                disabled={isLoading || !canCheckout}
-              >
-                Checkout
+            {isAuthenticated ? (
+              <Link href="/checkout" className="w-full">
+                <Button
+                  className="w-full"
+                  size="lg"
+                  disabled={isLoading || !canCheckout}
+                >
+                  Checkout
+                </Button>
+              </Link>
+            ) : (
+              <Button className="w-full" size="lg" disabled>
+                Sign in to checkout
               </Button>
-            </Link>
+            )}
 
             {!isLoading && hasOutOfStock && (
               <p className="text-center text-[10px] text-destructive">

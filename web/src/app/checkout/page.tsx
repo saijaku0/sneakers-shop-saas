@@ -1,11 +1,12 @@
-import { Container } from "@/shared/ui";
-import { CheckoutHeader } from "@/widgets/checkout-header/ui/checkout-header";
+"use client";
+
+import { AuthGuard } from "@/features/auth-guard";
+import { CheckoutWizard } from "@/features/checkout-wizard";
 
 export default function CheckoutPage() {
   return (
-    <>
-      <CheckoutHeader />
-      <Container>CheckoutPage</Container>
-    </>
+    <AuthGuard>
+      <CheckoutWizard />
+    </AuthGuard>
   );
 }
