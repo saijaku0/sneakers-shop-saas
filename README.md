@@ -1,79 +1,162 @@
-# Sneakers Shop - Backend
+# Sneakers Shop
 
-## What is an MVP and what is it built around
+An educational, full-stack e-commerce platform for a sneaker store. The point of the
+project isn't the domain - it's the engineering underneath it: a **.NET backend** built
+around Domain-Driven Design, CQRS and real concurrency control, paired with a **Next.js
+frontend** organized with Feature-Sliced Design.
 
-**MVP** (Minimum Viable Product) is the minimum version of a product with a set of functionality
-sufficient to validate the core business entities and domain model.
-The scope intentionally does not include all entities in the schema: the MVP slice is the chain
-“catalog -> cart -> inventory reservation -> order -> payment”. Discount, Comment, Wishlist
-are deferred to subsequent iterations.
+It is deliberately **not** production software. The goal is to demonstrate architectural
+depth on a realistic vertical slice rather than to ship a store.
 
-## Authentication
+---
 
-**ASP.NET Core Identity** is used - a self-hosted solution built into ASP.NET Core:
-logins and password hashes are stored in its own database. The choice is motivated by the fact
-that there is no need to deploy and configure an external provider (Auth0); registration, login,
-hashing, and session management are provided “out of the box” and are tightly integrated with
-the ASP.NET Core pipeline.
-`UserProfile.id` corresponds to the user identifier from Identity.
+## What it does
 
-## Entities and aggregates
+A single, fully-working vertical flow, covered by tests end to end:
 
-- **Brand** - an _aggregate_ (a small independent root). Stores the brand name.
-  Product references Brand by `brandId`; the relationship is one-to-many: one brand = many
-  products. It is a separate root because Brand is referenced from multiple places
-  (Product, Discount): a shared reference cannot be someone else's child object.
+**registration -> catalog with filters -> product page -> cart -> checkout with a concurrent
+inventory reservation -> order details / order list.**
 
-- **Product** - an _aggregate_, the product showcase (model, description, base price, images).
-  Product knows nothing about inventory - WarehouseItem references Product by ID.
-  It is intentionally separated so that products can be displayed even when they are currently
-  out of stock (preparation for a future availability date). It is a root because it is referenced by
-  WarehouseItem, Comment, WishlistItem, Discount.
+The scope is intentionally narrow. Discounts, wishlists, comments and admin tooling exist
+in the domain model but are deferred to later iterations - the MVP validates the core
+entities and the hardest part of the flow (checkout under contention), not breadth.
 
-- **WarehouseItem** - an _aggregate_ (inventory). There is no `Warehouse` wrapper: it would not
-  enforce any invariant across positions - stock levels of different rows are independent.
-  **Invariant:** `reserved <= quantity`, enforced within the boundary of a single row. Concurrent
-  access is protected by a concurrency token (`xmin`/version) on the same row. Contains an
-  **embedded Size VO** (`sizeSystem`, `sizeValue`) - there is no separate Size table;
-  the VO is responsible for representing sizes in EU/US systems.
+---
 
-- **Cart** - an _aggregate_, the user's mutable shopping cart. A separate root, **NOT part of
-  Order**: the cart has a different lifecycle (draft, can be abandoned) and a different relationship
-  to pricing. Key decisions:
+## Tech stack
 
-  - Prices in the cart are **live** - `CartItem` does not store the price; it is calculated on read
-    from `Product.basePrice` + active discounts. (Compare with `OrderItem`, which stores a
-    price snapshot.)
-  - Adding an item to the cart does **NOT reserve inventory**. Reservation
-    (`WarehouseItem.Reserve()`) happens only during checkout - otherwise a single item in N
-    carts would lock all available stock.
-  - One active cart per user (`userId` unique).
-    **Invariants:** `quantity > 0` for an item; no duplicate SKUs within a cart (adding the same
-    SKU again increases the quantity).
+**Backend**
+- .NET 10 / C#
+- Clean Architecture (Domain / Application / Infrastructure / API)
+- Domain-Driven Design - rich aggregates, invariants enforced inside boundaries
+- CQRS with MediatR; pipeline behaviors for validation and concurrency retry
+- EF Core over PostgreSQL
+- FluentValidation
+- ASP.NET Core Identity for authentication
 
-- **CartItem** - an _entity_ within the Cart aggregate (not a root). References a specific
-  `WarehouseItem` (product + size = SKU) by ID. Mutates only through the Cart root
-  (`internal` mutation methods).
+**Frontend** (`web/`)
+- Next.js 16 (App Router) + React 19 + TypeScript
+- Feature-Sliced Design
+- Redux Toolkit + RTK Query for server and client state
+- React Hook Form + Zod for forms and validation
+- Radix UI + shadcn/ui + Tailwind CSS v4
+- Embla (carousels), Sonner (toasts), next-themes
 
-- **Order** - an _aggregate_, a placed order. Created at checkout and then progresses through
-  statuses (Pending -> Paid -> …). **Invariant:** `totalAmount` = sum of all items;
-  prices are **frozen as a snapshot** (`unitPrice`) at the time of checkout.
+**Tooling**
+- pnpm workspace (monorepo)
+- Docker for local infrastructure (`infra/`)
+- Postman collection (`.postman/`) for the API
 
-- **OrderItem** - an _entity_ within the Order aggregate (not a root). An order line containing
-  a price snapshot. It has no external references and lives and dies together with Order.
+---
 
-- **UserProfile** - an _aggregate_. Holds WishlistItem as child entities.
+## Repository layout
 
-## Checkout
+```
+.
+├── backend/        .NET solution - Domain / Application / Infrastructure / API + tests
+├── web/            Next.js frontend (Feature-Sliced Design)
+├── infra/          local infrastructure (containers)
+├── .postman/       API collection
+├── .github/        CI workflows
+└── pnpm-workspace.yaml
+```
 
-An Application-level operation that links three aggregates (by ID, not by nesting):
+---
 
-1. Read the user's `Cart`.
-2. For each item - call `WarehouseItem.Reserve(quantity)` (validation of `reserved <= quantity`,
-   concurrency token on the inventory row).
-3. Freeze prices as snapshots in `OrderItem` (`unitPrice`, `discountAmount`).
-4. Create an `Order` with status `Pending`.
-5. Clear the `Cart`.
+## Architecture highlights
 
-The concurrency logic lives specifically in step 2 (regression test: N parallel checkouts for the
-last pair of items -> exactly 1 success).
+### Domain model
+
+Aggregates are drawn around invariants and lifecycle, not around database tables:
+
+- **Product** - the showcase (model, description, base price, images). Knows nothing about
+  stock, so products can be listed even when out of stock. A root because inventory,
+  comments, wishlist items and discounts all reference it.
+- **WarehouseItem** - inventory. No `Warehouse` wrapper, because there is no invariant that
+  spans rows; stock levels are independent per row. **Invariant:** `reserved <= quantity`,
+  enforced on a single row and protected by a concurrency token. Carries an embedded
+  **Size value object** (`sizeSystem`, `sizeValue`) instead of a Size table.
+- **Cart** - the user's mutable, abandonable cart. Separate from Order by design: different
+  lifecycle, different pricing rules. Prices are **live** (computed on read from
+  `Product.basePrice` + active discounts). Adding to the cart does **not** reserve stock -
+  reservation happens only at checkout, so one item sitting in N carts can't lock inventory.
+- **Order** - a placed order. **Invariant:** `totalAmount` equals the sum of items, and
+  prices are **frozen as a snapshot** (`unitPrice`) at checkout - the opposite of the cart.
+  Progresses through a status state machine (Pending -> Paid -> …).
+- **Brand**, **UserProfile** - small independent roots.
+
+`CartItem` and `OrderItem` are entities *inside* their aggregates and mutate only through
+the root.
+
+### Checkout & concurrency - the core of the project
+
+Checkout is an application-level operation that coordinates three aggregates by ID (never by
+nesting): read the cart, call `WarehouseItem.Reserve(quantity)` per line (which validates
+`reserved <= quantity` under a concurrency token), freeze prices into `OrderItem`, create the
+`Order` as `Pending`, and clear the cart - all in one transaction.
+
+The interesting part is step two. A **`ConcurrencyRetryBehavior`** in the MediatR pipeline,
+combined with the row concurrency token, guarantees **no oversell** under parallel checkouts.
+This is backed by a regression test: **N parallel checkouts competing for the last unit ->
+exactly one succeeds.**
+
+### Read/write separation
+
+- **Read side** goes through `IApplicationDbContext` - projects straight into DTOs with
+  `AsNoTracking`.
+- **Write side** goes through repositories per aggregate, committed via a shared
+  `CommandHandler` base and `IUnitOfWork`.
+
+Controllers return `Result` mapped to HTTP via a single `MapError` (ProblemDetails +
+`errorCode`), rather than wrapping in `Ok()`.
+
+### Authentication
+
+ASP.NET Core Identity - self-hosted, no external provider to stand up. Registration, login,
+password hashing and sessions come from the framework. `UserProfile.Id` maps to the Identity
+user id, and `[Authorize]` handlers read the user id from token claims via
+`ICurrentUserService`.
+
+---
+
+## Testing
+
+- **Domain unit tests** for aggregate invariants and state transitions.
+- **Integration tests** through a custom `WebApplicationFactory` over real HTTP, with a
+  `TestAuthHelper` issuing tokens.
+- **Concurrency regression test** - the checkout no-oversell scenario described above.
+
+---
+
+## Getting started
+
+> Commands below are the intended shape of the workflow; adjust to your local setup.
+
+**Prerequisites:** .NET 10 SDK, Node.js + pnpm, Docker.
+
+```bash
+# 1. Start local infrastructure (database, etc.)
+docker compose -f infra/docker-compose.yml up -d
+
+# 2. Backend - from the backend/ solution
+dotnet run --project backend/src/API
+
+# 3. Frontend
+pnpm install
+pnpm --filter web dev
+```
+
+---
+
+## Roadmap
+
+- **Domain event dispatch** - the mechanism to raise events (`OrderPaid`,
+  `WarehouseItemReserved`, `OrderCancelled`) is in place; the first real subscriber is
+  `OrderCancelled -> release inventory`. Dispatch ships together with that first reaction, not
+  as an empty pipe.
+- Order cancellation by the user
+- Profile page (name / email / password via Identity, not raw updates)
+- Product descriptions, discounts (`Discount` + Sale filter)
+- Admin area, wishlist, comments with moderation
+- Redis caching for the catalog, email confirmation
+- End-to-end tests (full-flow xUnit chain on the backend, Playwright on checkout)
