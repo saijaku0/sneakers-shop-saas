@@ -4,6 +4,7 @@ import { cn, ThemeProvider } from "@/shared/lib";
 import { StoreProvider } from "./store";
 
 import "./globals.css";
+import { Toaster } from "@/shared/ui";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -48,6 +49,7 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
+            <Toaster />
             {children}
           </ThemeProvider>
         </StoreProvider>
