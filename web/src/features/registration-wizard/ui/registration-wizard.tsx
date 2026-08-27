@@ -7,8 +7,6 @@ import { AddressStep } from "./address-step";
 import { CardStep } from "./card-step";
 import { selectStep } from "../model/selectors";
 import { nextStep, prevStep } from "../model/slice";
-import { Home } from "lucide-react";
-import Link from "next/link";
 
 const TITLES = ["Create Account", "Shipping Address", "Payment Method"];
 const TOTAL_STEPS = 3;
