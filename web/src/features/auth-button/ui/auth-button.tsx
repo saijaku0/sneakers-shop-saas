@@ -17,21 +17,46 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/shared/ui";
-import { selectToken, clearToken } from "@/entities/session";
+import {
+  selectToken,
+  clearToken,
+  selectRefreshToken,
+} from "@/entities/session";
 import { cn } from "@/shared/lib";
 import { User } from "lucide-react";
 import { LoginForm } from "./login-form";
 import { useState } from "react";
 import { clearCart } from "@/entities/cart";
+import { useLogoutMutation } from "../api/auth-api";
+import { api } from "@/shared/api";
 
 export function AuthButton({
   orientation = "row",
+  size,
 }: {
   orientation?: "row" | "col";
+  size?: React.ComponentProps<typeof Button>["size"];
 }) {
   const [signInOpen, setSignInOpen] = useState(false);
   const token = useSelector(selectToken);
+  const refreshToken = useSelector(selectRefreshToken);
   const dispatch = useDispatch();
+
+  const [logoutApi] = useLogoutMutation();
+
+  const handleLogout = async () => {
+    try {
+      if (refreshToken) {
+        await logoutApi({ refreshToken }).unwrap();
+      }
+    } catch (error) {
+      console.error("Backend logout failed", error);
+    } finally {
+      dispatch(clearToken());
+      dispatch(clearCart());
+      dispatch(api.util.resetApiState());
+    }
+  };
 
   if (token) {
     return (
@@ -47,17 +72,14 @@ export function AuthButton({
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-48">
           <DropdownMenuItem asChild>
-            <Link href="/profile">Profile</Link>
+            <Link href="/profile/personal">Profile</Link>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
-            <Link href="/orders">Orders</Link>
+            <Link href="/profile/orders">Orders</Link>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem
-            onClick={() => {
-              dispatch(clearToken());
-              dispatch(clearCart());
-            }}
+            onClick={handleLogout}
             className="text-destructive focus:text-destructive"
           >
             Sign out
@@ -76,7 +98,9 @@ export function AuthButton({
     >
       <Dialog open={signInOpen} onOpenChange={setSignInOpen}>
         <DialogTrigger asChild>
-          <Button variant="ghost">Sign in</Button>
+          <Button variant="ghost" size={size}>
+            Sign in
+          </Button>
         </DialogTrigger>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
@@ -86,7 +110,7 @@ export function AuthButton({
         </DialogContent>
       </Dialog>
 
-      <Button asChild>
+      <Button asChild size={size}>
         <Link href="/sign-up">Sign up</Link>
       </Button>
     </div>
